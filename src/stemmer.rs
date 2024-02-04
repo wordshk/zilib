@@ -3,7 +3,6 @@ use pyo3::pyfunction;
 pub struct PorterStemmer {
     b: String, // buffer for word to be stemmed
     k: usize,
-    k0: usize,
     j: usize, // j is a general offset into the string
 }
 
@@ -21,7 +20,6 @@ impl PorterStemmer {
         Self {
             b: String::new(),
             k: 0,
-            k0: 0,
             j: 0,
         }
     }
@@ -31,7 +29,7 @@ impl PorterStemmer {
         match self.b.chars().nth(i).unwrap() { // FIXME: unwrap
             'a' | 'e' | 'i' | 'o' | 'u' => false,
             'y' => {
-                if i == self.k0 {
+                if i == 0 {
                     true
                 } else {
                     !self.cons(i - 1)
@@ -53,10 +51,10 @@ impl PorterStemmer {
            ....
         "*/
         let mut n: i32 = 0; // FIXME: need i32?
-        let mut i = self.k0;
+        let mut i = 0;
 
         loop {
-            if i > self.j {
+            if i >= self.j {
                 return n
             }
             if !self.cons(i) {
@@ -67,7 +65,7 @@ impl PorterStemmer {
         i = i + 1;
         loop {
             loop {
-                if i > self.j {
+                if i >= self.j {
                     return n
                 }
                 if self.cons(i) {
@@ -78,7 +76,7 @@ impl PorterStemmer {
             i = i + 1;
             n = n + 1;
             loop {
-                if i > self.j {
+                if i >= self.j {
                     return n
                 }
                 if ! self.cons(i) {
@@ -92,7 +90,7 @@ impl PorterStemmer {
 
     fn vowelinstem(&self) -> bool {
         // vowelinstem() is TRUE <=> k0,...j contains a vowel
-        for i in self.k0..=self.j {
+        for i in 0..self.j {
             if !self.cons(i) {
                 return true;
             }
@@ -102,7 +100,7 @@ impl PorterStemmer {
 
     fn doublec(&self, j: usize) -> bool {
         // doublec(j) is TRUE <=> j,(j-1) contain a double consonant.
-        if j < self.k0 + 1 {
+        if j < 1 {
             false
         } else if self.b.chars().nth(j) != self.b.chars().nth(j - 1) {
             false
@@ -119,7 +117,7 @@ impl PorterStemmer {
            cav(e), lov(e), hop(e), crim(e), but
            snow, box, tray.
         "*/
-        if i < self.k0 + 2 || !self.cons(i) || self.cons(i - 1) || !self.cons(i - 2) {
+        if i < 2 || !self.cons(i) || self.cons(i - 1) || !self.cons(i - 2) {
             false
         } else {
             match self.b.chars().nth(i).unwrap() { // FIXME: unwrap
@@ -132,10 +130,10 @@ impl PorterStemmer {
     fn ends(&mut self, s: &str) -> bool {
         // ends(s) is TRUE <=> k0,...k ends with the string s.
         let length = s.len();
-        if length > self.k - self.k0 + 1 {
+        if length > self.k {
             return false;
         }
-        if self.b[self.k - length + 1..self.k + 1] == *s {
+        if self.b[self.k - length..self.k] == *s {
             self.j = self.k - length;
             true
         } else {
@@ -146,7 +144,7 @@ impl PorterStemmer {
     fn setto(&mut self, s: &str) {
         // setto(s) sets (j+1),...k to the characters in the string s, readjusting k.
         let length = s.len();
-        self.b = self.b[..self.j + 1].to_string() + s + &self.b[self.j + length + 1..];
+        self.b = self.b[..self.j].to_string() + s + &self.b[self.j + length..];
         self.k = self.j + length;
     }
 
@@ -179,12 +177,12 @@ impl PorterStemmer {
            meetings  ->  meet
         "*/
 
-        if self.b.chars().nth(self.k).unwrap() == 's' {
+        if self.b.chars().nth(self.k - 1).unwrap() == 's' {
             if self.ends("sses") {
                 self.k -= 2;
             } else if self.ends("ies") {
                 self.setto("i");
-            } else if self.b.chars().nth(self.k - 1).unwrap() != 's' {
+            } else if self.b.chars().nth(self.k - 2).unwrap() != 's' {
                 self.k -= 1;
             }
         }
@@ -200,13 +198,13 @@ impl PorterStemmer {
                 self.setto("ble");
             } else if self.ends("iz") {
                 self.setto("ize");
-            } else if self.doublec(self.k) {
+            } else if self.doublec(self.k - 1) {
                 self.k -= 1;
-                let ch = self.b.chars().nth(self.k).unwrap();
+                let ch = self.b.chars().nth(self.k - 1).unwrap();
                 if ch == 'l' || ch == 's' || ch == 'z' {
                     self.k += 1;
                 }
-            } else if self.m() == 1 && self.cvc(self.k) {
+            } else if self.m() == 1 && self.cvc(self.k - 1) {
                 self.setto("e");
             }
         }
@@ -215,7 +213,7 @@ impl PorterStemmer {
     fn step1c(&mut self) {
         // step1c() turns terminal y to i when there is another vowel in the stem.
         if self.ends("y") && self.vowelinstem() {
-            self.b = self.b[..self.k].to_string() + "i" + &self.b[self.k + 1..];
+            self.b = self.b[..self.k - 1].to_string() + "i" + &self.b[self.k..];
         }
     }
 
@@ -224,9 +222,10 @@ impl PorterStemmer {
         so -ization ( = -ize plus -ation) maps to -ize etc. note that the
         string before the suffix must give m() > 0.
         */
-        // assert instead of if
-        assert!(self.k > self.k0);
-        match self.b.chars().nth(self.k - 1).unwrap() {
+        if self.k < 2 {
+            return;
+        }
+        match self.b.chars().nth(self.k - 2).unwrap() {
             'a' => {
                 if self.ends("ational") { self.r("ate"); }
                 else if self.ends("tional") { self.r("tion"); }
@@ -272,7 +271,8 @@ impl PorterStemmer {
 
     fn step3(&mut self) {
         // step3() dels with -ic-, -full, -ness etc. similar strategy to step2.
-        match self.b.chars().nth(self.k).unwrap() {
+        assert!(self.k > 0);
+        match self.b.chars().nth(self.k - 1).unwrap() {
             'e' => {
                 if self.ends("icate") { self.r("ic"); }
                 else if self.ends("ative") { self.r(""); }
@@ -294,8 +294,10 @@ impl PorterStemmer {
 
     fn step4(&mut self) {
         // step4() takes off -ant, -ence etc., in context <c>vcvc<v>.
-        assert!(self.k > self.k0);
-        match self.b.chars().nth(self.k - 1).unwrap() {
+        if self.k < 2 {
+            return;
+        }
+        match self.b.chars().nth(self.k - 2).unwrap() {
             'a' => {
                 if self.ends("al") { }
                 else { return; }
@@ -326,7 +328,7 @@ impl PorterStemmer {
                 else { return; }
             },
             'o' => {
-                if self.ends("ion") && (self.j >= self.k0 && (self.b.chars().nth(self.j).unwrap() == 's' || self.b.chars().nth(self.j).unwrap() == 't')) { }
+                if self.ends("ion") && (self.j > 1 && (self.b.chars().nth(self.j - 1).unwrap() == 's' || self.b.chars().nth(self.j - 1).unwrap() == 't')) { }
                 else if self.ends("ou") { }
                 // takes care of -ous
                 else { return; }
@@ -362,18 +364,18 @@ impl PorterStemmer {
     fn step5(&mut self) {
         //step5() removes a final -e if m() > 1, and changes -ll to -l if m() > 1.
         self.j = self.k;
-        if self.b.chars().nth(self.k).unwrap() == 'e' {
+        if self.b.chars().nth(self.k - 1).unwrap() == 'e' {
             let a = self.m();
-            if a > 1 || (a == 1 && !self.cvc(self.k - 1)) {
+            if a > 1 || (a == 1 && !self.cvc(self.k - 2)) {
                 self.k -= 1;
             }
         }
-        if self.b.chars().nth(self.k).unwrap() == 'l' && self.doublec(self.k) && self.m() > 1 {
+        if self.b.chars().nth(self.k - 1).unwrap() == 'l' && self.doublec(self.k - 1) && self.m() > 1 {
             self.k -= 1;
         }
     }
 
-    pub fn stem(&mut self, p: &str, i: usize, j: usize) -> String {
+    fn stem(&mut self, p: &str) -> String {
         /* In stem(p,i,j), p is a char pointer, and the string to be stemmed
         is from p[i] to p[j] inclusive. Typically i is zero and j is the
         offset to the last character of a string, (p[j+1] == '\0'). The
@@ -383,16 +385,15 @@ impl PorterStemmer {
         extern, and delete the remainder of this file.
         "*/
         self.b = p.to_string();
-        self.k = j;
-        self.k0 = i;
-        if self.k <= self.k0 + 1 {
-            return self.b.clone(); // --DEPARTURE--
-        }
+        self.k = self.b.len();
 
         // With this line, strings of length 1 or 2 don't go through the
         // stemming process, although no mention is made of this in the
         // published algorithm. Remove the line to match the published
         // algorithm.
+        if self.k <= 2 {
+            return self.b.clone(); // --DEPARTURE--
+        }
 
         self.step1ab();
         self.step1c();
@@ -400,7 +401,7 @@ impl PorterStemmer {
         self.step3();
         self.step4();
         self.step5();
-        self.b[self.k0..=self.k].to_string()
+        self.b[..self.k].to_string()
     }
 }
 
@@ -409,5 +410,5 @@ pub fn american_english_stem(w: &str) -> String {
     // lower case ASCII a-z only
     let word = w.chars().filter(|c| c.is_ascii_alphabetic()).collect::<String>().to_lowercase();
     let mut stemmer = PorterStemmer::new();
-    stemmer.stem(&word, 0, word.len() - 1)
+    stemmer.stem(&word)
 }
