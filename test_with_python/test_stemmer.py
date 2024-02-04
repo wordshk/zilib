@@ -12,7 +12,21 @@ class StemmerTest(unittest.TestCase):
         self.assertEqual(lib.american_english_stem(word), zilib.american_english_stem(word), f'Failed to stem {word}')
 
     def test_degenerate(self):
-        self.stem('ies')
+        self.stem('')
+        self.stem('!')
+        self.stem('\n')
+        self.stem('\r\n')
+        self.stem(' ')
+        self.stem('  ')
+        self.stem(' latinize ')
+        self.stem('latinize greatest')
+        self.stem('greatest latinize')
+
+        # These are discrepancies between unicodedecode and stripping away non-ascii characters
+        self.assertEqual('gretestlatin', zilib.american_english_stem('greätest latinize'))
+        self.assertEqual('latinizegreatest', zilib.american_english_stem('latinize 我 greatest'))
+        self.assertEqual('latinizegreatest', zilib.american_english_stem('我latinize我greatest我'))
+        self.assertEqual('greatestlatin', zilib.american_english_stem('我greatest我latinize我'))
 
     def test_simple(self):
         self.stem('caresses')
