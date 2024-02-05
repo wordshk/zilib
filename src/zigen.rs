@@ -1,12 +1,15 @@
+/// This program contains code to generate lists and data required for the library. It may be based
+/// on external data sources.
+
 use bzip2::read::BzDecoder;
 use encoding_rs::WINDOWS_1252;
 use encoding_rs_io::DecodeReaderBytesBuilder;
 use regex::Regex;
-use std::collections::HashMap;
-use std::collections::HashSet;
+use std::cmp::Ordering;
+use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader};
+use std::io::{self, BufRead, BufReader, Write};
 
 /*
 # More details about file format of varcon can be found in:
@@ -14,7 +17,7 @@ use std::io::{self, BufRead, BufReader};
 # - https://github.com/en-wl/wordlist/blob/master/varcon/README
 */
 
-fn generate_english_variants(filename : &str) -> io::Result<()> {
+fn generate_english_variants(filename : &str, out_filename : &str) -> io::Result<()> {
 
     // Read the file as bzip2 instead of plain text. The file is in ISO-8859-1 encoding (also known
     // as Windows-1252)
@@ -146,17 +149,56 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 "#.trim());
 
-    println!("VARIANT_TO_US_ENGLISH = {{");
-    for (k, s) in reverse_map {
-        for v in &s {
-            if v != &k {
-                println!("    {:?}: {:?},", v, k);
+    // Writing the map as json file to the output file
+    let mut out_file = File::create(out_filename)?;
+
+    // newbie note: the double braces are an escape sequence in rust for the curly braces
+    writeln!(out_file, "{{")?;
+
+    // count the expected number of items
+    let mut total = 0;
+    for (_, s) in reverse_map.iter() {
+        for _ in s.iter() {
+            total += 1;
+        }
+    }
+
+    let mut count = 0;
+    for (k, s) in sorted_by(reverse_map.iter(), |a, b| a.0.cmp(b.0)).iter()  {
+        for v in sorted(s.iter()).iter() {
+            count += 1;
+            if v != k {
+                write!(out_file, r#""{}":"{}""#, v, k)?;
+                // Check whether the last element is reached
+                if count + 1 < total {
+                    writeln!(out_file, ",")?;
+                } else {
+                    writeln!(out_file, "")?;
+                }
             }
         }
     }
-    println!("}}");
+    writeln!(out_file, "}}")?;
 
     Ok(())
+}
+
+// Function that takes an iterator and returns another vector that is sorted
+fn sorted<T: Ord, I: Iterator<Item=T>>(iter: I) -> Vec<T> {
+    let mut v: Vec<_> = iter.collect();
+    v.sort();
+    v
+}
+
+// Function that takes an iterator and returns another vector that is sorted by a custom comparator
+fn sorted_by<T, F, I>(iter: I, cmp: F) -> Vec<T>
+where
+    F: FnMut(&T, &T) -> Ordering,
+    I: Iterator<Item = T>,
+{
+    let mut v: Vec<_> = iter.collect();
+    v.sort_by(cmp);
+    v
 }
 
 fn is_suffix(s: &str, ref_set: &HashSet<String>) -> bool {
@@ -167,13 +209,13 @@ fn is_suffix(s: &str, ref_set: &HashSet<String>) -> bool {
 fn usage() {
     println!("Usage: zigen <command> <args>");
     println!("Commands:");
-    println!("  generate_english_variants <filename> - Generate a map of English variants from the varcon file");
+    println!("  generate_english_variants <filename> <output_filename> - Generate a map of English variants from the varcon file");
 }
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
-    match (args.get(1).map(String::as_str), args.get(2)) {
-        (Some("generate_english_variants"), Some(filename)) => generate_english_variants(filename),
+    match (args.get(1).map(String::as_str), args.get(2), args.get(3)) {
+        (Some("generate_english_variants"), Some(filename), Some(out_filename) ) => generate_english_variants(filename, out_filename),
         _ => {
             usage();
             Err(io::Error::new(io::ErrorKind::InvalidInput, "Invalid usage"))
