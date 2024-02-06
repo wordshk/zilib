@@ -1,10 +1,11 @@
-all: rust_all zigen_data
-rust_all:
+all: zigen_data rust_all
+rust_all: zigen_data
 	cargo build
 lint:
 	cargo clippy
 
-target/debug/%: rust_all
+target/debug/%:
+	cargo build --bins
 
 zigen_data: lists/english_variants.json
 
