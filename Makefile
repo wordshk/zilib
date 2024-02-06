@@ -17,3 +17,6 @@ lists/%.json: lists/varcon.txt.bz2 target/debug/zigen
 
 clean:
 	cd lists && git clean -f -x -d
+
+release:
+	cargo build --release
