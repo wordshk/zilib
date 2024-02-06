@@ -1,5 +1,6 @@
 pub mod common;
 pub mod stemmer;
+pub mod english;
 
 use pyo3::prelude::*;
 
@@ -14,6 +15,8 @@ fn zilib(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(common::is_cjk_cp, m)?)?;
     m.add_function(wrap_pyfunction!(common::has_cjk, m)?)?;
     m.add_function(wrap_pyfunction!(common::looks_like_a_sentence, m)?)?;
+
+    m.add_function(wrap_pyfunction!(english::usa_english, m)?)?;
 
     m.add_function(wrap_pyfunction!(stemmer::american_english_stem, m)?)?;
     Ok(())
