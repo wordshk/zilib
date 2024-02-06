@@ -45,7 +45,7 @@ pub fn is_latin(s: &str) -> bool {
 /// "Full-Width" punctuations. Do not assume this is very reliable
 #[pyfunction]
 pub fn looks_like_a_sentence(s: &str) -> bool {
-    s.len() > 8 || "。，；？「」！".chars().any(|punct| s.find(punct).is_some())
+    s.chars().count() > 8 || "。，；？「」！".chars().any(|punct| s.find(punct).is_some())
 }
 
 enum LanguageGroup {
@@ -100,6 +100,7 @@ fn _guess_language(s: &str) -> LanguageGroup {
 }
 
 /// Returns a constant representing the language group the text is in. Might be inaccurate.
+#[pyfunction]
 pub fn guess_language(s: &str) -> String {
     _guess_language(s).to_string()
 }

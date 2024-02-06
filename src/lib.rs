@@ -14,6 +14,7 @@ fn zilib(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(common::is_cjk_cp, m)?)?;
     m.add_function(wrap_pyfunction!(common::has_cjk, m)?)?;
     m.add_function(wrap_pyfunction!(common::looks_like_a_sentence, m)?)?;
+    m.add_function(wrap_pyfunction!(common::guess_language, m)?)?;
 
     m.add_function(wrap_pyfunction!(english::usa_english, m)?)?;
     m.add_function(wrap_pyfunction!(english::american_english_stem, m)?)?;
