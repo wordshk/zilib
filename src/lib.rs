@@ -1,5 +1,4 @@
 pub mod common;
-pub mod latin;
 pub mod stemmer;
 
 use pyo3::prelude::*;
