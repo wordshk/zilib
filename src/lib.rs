@@ -1,5 +1,6 @@
 pub mod common;
 pub mod english;
+pub mod ruby_match;
 
 use pyo3::prelude::*;
 
@@ -18,5 +19,7 @@ fn zilib(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
 
     m.add_function(wrap_pyfunction!(english::usa_english, m)?)?;
     m.add_function(wrap_pyfunction!(english::american_english_stem, m)?)?;
+
+    m.add_function(wrap_pyfunction!(ruby_match::ruby_match, m)?)?;
     Ok(())
 }

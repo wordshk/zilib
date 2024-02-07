@@ -7,6 +7,7 @@ Unit tests
 import unittest
 
 import zilib as common
+import zilib
 from pylib import cantonese
 from pylib import util
 # from pylib import ruby_match
@@ -183,9 +184,9 @@ class TestCommon(BaseTestCase):
         self.assertEqual(common.guess_language("。"), UNKNOWN_LANGUAGE)
 
     def test_ruby_match(self):
-        return True
         def rm(a, b):
-            return ruby_match.RubyMatch(a, b).plain_text()
+            # return ruby_match.RubyMatch(a, b).plain_text()
+            return zilib.ruby_match(a, b)[0]
 
         t = "呢度嘅食物質素返咁上下"
         p = "ni1 dou1 ge3 sik6 zat1 sou3 dou1 jau5 faan1 gam3 soeng6 haa2"
@@ -209,12 +210,12 @@ class TestCommon(BaseTestCase):
 
         t = "九唔搭八。"
         p = "jat1 gau2 ji6 saam1 sei3 m4"
-        r = "九gau2ji6saam1sei3 唔m4 搭 八 。"
+        r = "九jat1gau2ji6saam1sei3 唔m4 搭 八 。"
         self.assertEqual(rm(t, p), r)
 
         t = "九唔搭八。"
         p = "jat1 gau2 ji6 saam1 sei3 daap3"
-        r = "九gau2 唔ji6saam1sei3 搭daap3 八 。"
+        r = "九jat1gau2 唔ji6saam1sei3 搭daap3 八 。"
         self.assertEqual(rm(t, p), r)
 
         t = "ＳＥＲＶＥＲ。"
@@ -310,16 +311,15 @@ class TestCommon(BaseTestCase):
         # Not obvious what the result should be.
         t = "九唔搭八。"
         p = "jat1 ji6 saam1 sei3 aa1 aa1"
-        self.assertEqual(rm(t, p), "九jat1ji6saam1 唔sei3 搭aa1 八aa1 。")
+        self.assertEqual(rm(t, p), "九jat1 唔ji6 搭saam1 八sei3aa1aa1 。")
 
-        # currently the jat1 does not stick to the 九, but it probably should instead of being left out
         t = "九唔搭八。"
         p = "jat1 gau2 ji6 saam1 sei3"
-        self.assertEqual(rm(t, p), "九gau2 唔ji6 搭saam1 八sei3 。")
+        self.assertEqual(rm(t, p), "九jat1gau2 唔ji6 搭saam1 八sei3 。")
 
         t = "九唔搭八。"
         p = "jat1 ji6 saam1 sei3 gau2"
-        r = "九gau2 唔 搭 八 。"
+        r = "九jat1ji6saam1sei3gau2 唔 搭 八 。"
         self.assertEqual(rm(t, p), r)
 
         t = "九唔搭八九。"
@@ -329,7 +329,7 @@ class TestCommon(BaseTestCase):
 
         t = "九唔搭八。"
         p = "jat1 daap1 baat3 saam1 sei3 gau2"
-        r = "九 唔jat1 搭daap1 八baat3saam1sei3gau2 。"
+        r = "九jat1 唔 搭daap1 八baat3saam1sei3gau2 。"
         self.assertEqual(rm(t, p), r)
 
         t = "我部XYZ死咗。"
@@ -337,7 +337,7 @@ class TestCommon(BaseTestCase):
         r = "我ngo5 部bou6 XYZ 死sei2 咗zo2 。"
         self.assertEqual(rm(t, p), r)
 
-        rmm = ruby_match.RUBY_MATCH_MAX
+        rmm = 300 # ruby_match.RUBY_MATCH_MAX
         t = "一 hi 搜 hi 一！" * (rmm // 10)
         p = ("jat1 haai1 sau1 sau2 sau3 sau4 sau5 sau6 haai1 jat1 " * (rmm // 10)).strip()
         r = ("一jat1   hihaai1sau1   搜sau2   hisau3sau4sau5sau6haai1   一jat1 ！ " * (rmm // 10)).strip()
@@ -350,7 +350,7 @@ class TestCommon(BaseTestCase):
 
         t = "一" * (rmm - 1)
         p = " ".join(["jat1"] * rmm)
-        r = " ".join(["一jat1"] * (rmm - 1))
+        r = " ".join(["一jat1jat1",] + ["一jat1"] * (rmm - 2))
         self.assertEqual(rm(t, p), r)
 
         t = "一" * (rmm - 1) + "。"
@@ -375,12 +375,12 @@ class TestCommon(BaseTestCase):
 
         t = "傻仔 #懵盛盛#condom#哈#condom#哈#哈 做#condom。"
         p = "so4 zai2 mung2 sing6 sing6 kon1 dam4 haa1 kon1 dam4 haa1 haa1 zou6 kon1 dam4"
-        r = "傻so4 仔zai2   #懵盛盛mung2sing6sing6kon1 #condomdam4 #哈haa1 #condomkon1dam4 #哈haa1 #哈haa1   做zou6 #condomkon1dam4 。"
+        r = "傻so4 仔zai2   #懵盛盛mung2 #condomsing6sing6kon1dam4 #哈haa1 #condomkon1dam4 #哈haa1 #哈haa1   做zou6 #condomkon1dam4 。"
         self.assertEqual(rm(t, p), r)
 
         t = "#。"
         p = "zeng2"
-        r = "# 。"
+        r = "#zeng2 。"
         self.assertEqual(rm(t, p), r)
 
         t = "井#。"

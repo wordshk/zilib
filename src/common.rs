@@ -41,6 +41,9 @@ pub fn is_latin(s: &str) -> bool {
     s.chars().all(|c| !is_cjk_cp(c as u32) && (c.is_letter_lowercase() || c.is_letter_uppercase()))
 }
 
+pub fn is_latin_c(c: char) -> bool {
+    !is_cjk_cp(c as u32) && (c.is_letter_lowercase() || c.is_letter_uppercase())
+}
 /// Returns true if the input looks like a Chinese/Cantonese sentence, assuming it uses
 /// "Full-Width" punctuations. Do not assume this is very reliable
 #[pyfunction]
