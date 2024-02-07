@@ -48,6 +48,7 @@ const HALF_MATCH_SCORE : i32 = 500;
 const EPSILON_SCORE : i32 = 1;
 
 // Score to discourage unmatched pronunciations from "corrupting" well matched txt-pr pairs.
+// XXX: No idea what this is about, might actually be useless.
 const CORRUPTION_SCORE: i32 = 10;
 
 fn ruby_text_ignore() -> &'static HashSet<char> {
@@ -226,17 +227,19 @@ impl RubyMatch {
 
         assert!(t_i >= 0 && p_j >= 0);
 
+        // XXX: these clone are unnecessary, but we haven't figured out how to avoid it yet since
+        // rust doesn't allow us to make parts of the struct immutable. Luckily, the performance
+        // impact should still be small because the length of the strings are small.
         let te = self.txt[t_i as usize].clone();
-        let pe = self.pronunciation[p_j as usize].clone(); // XXX: this clone is unnecessary, but we haven't figured out how to avoid it yet since rust doesn't allow us to make parts of the struct immutable
+        let pe = self.pronunciation[p_j as usize].clone();
 
-        // Special case to try match some single char '#' links
-        let te = if te.starts_with('#') && te.len() > 1 {
-            te[1..].to_string()
+        // te0 is guaranteed to exist due to tokenizer implementation
+        let te0 = if te.starts_with('#') && te.len() > 1 {
+            // Special case to try match some single char '#' links
+            te[1..].chars()
         } else {
-            te
-        };
-
-        let te0 = te.chars().next().unwrap(); // te0 is guaranteed to exist due to tokenizer implementation
+            te.chars()
+        }.next().unwrap();
 
         let (max_arg, max_v) =
             if ruby_text_ignore().contains(&te0) {
@@ -272,14 +275,14 @@ impl RubyMatch {
                             v = tv;
                         }
 
-                        if te.len() > 1 || common::is_cjk_cp(te0 as u32) {
-                            let targ = (t_i-1, p_j-1, false);
-                            let tv = self._lcs(targ) + EPSILON_SCORE;
-                            if tv > v {
-                                the_arg = targ;
-                                v = tv;
-                            }
+                        // if te.len() > 1 || common::is_cjk_cp(te0 as u32) { // this if condition is probably not needed?
+                        let targ = (t_i-1, p_j-1, false);
+                        let tv = self._lcs(targ) + EPSILON_SCORE;
+                        if tv > v {
+                            the_arg = targ;
+                            v = tv;
                         }
+                        // }
 
                         (the_arg, v)
                     }

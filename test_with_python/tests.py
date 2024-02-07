@@ -7,7 +7,8 @@ import bz2
 import csv
 
 
-class StemmerTest(unittest.TestCase):
+
+class StemmerTest():
     def stem(self, word):
         self.assertEqual(lib.american_english_stem(word), zilib.american_english_stem(word), f'Failed to stem {word}')
 
@@ -65,6 +66,30 @@ class StemmerTest(unittest.TestCase):
             for row in csvreader:
                 self.stem(row[0])
 
+class RubyMatchTest(unittest.TestCase):
+    def test_ruby_match(self):
+        def rm(a, b):
+            return zilib.ruby_match(a, b)[0]
+
+        t = "X丫X丫X丫X丫X丫"
+        p = "tik1 waai1 tik1 waai1 tik1 waai1 tik1 waai1 tik1 waai1"
+        self.assertEqual(rm(t, p), "Xtik1 丫waai1 Xtik1 丫waai1 Xtik1 丫waai1 Xtik1 丫waai1 Xtik1 丫waai1")
+
+        t = ""
+        p = ""
+        self.assertEqual(rm(t, p), "")
+
+        t = "x"
+        p = ""
+        self.assertEqual(rm(t, p), "x")
+
+        t = "#x"
+        p = ""
+        self.assertEqual(rm(t, p), "#x")
+
+        t = "#卜 #正 #卜 #正"
+        p = "haa1 lou2 haa1 lou2"
+        self.assertEqual(rm(t, p), "#卜haa1   #正lou2   #卜haa1   #正lou2")
 
 if __name__ == '__main__':
     unittest.main()

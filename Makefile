@@ -20,3 +20,6 @@ clean:
 
 release:
 	cargo build --release
+
+test:
+	cd test_with_python/ && make
