@@ -18,7 +18,7 @@ fn cantonese_charlist() -> &'static HashMap<char, HashSet<String>> {
         let data = include_str!("../lists/charlist.json");
 
         //               character  pronunciation count
-        let json : HashMap<char, HashMap<String, u64>> = serde_json::from_str(data).unwrap();
+        let json : HashMap<char, HashMap<String, u64>> = serde_json::from_str(data).unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
 
         // Strip the count from the json data and convert it to a HashSet.
         json.into_iter().map(|(ch, pd)| (ch, pd.into_keys().map(|p| p).collect())).collect()
@@ -233,13 +233,12 @@ impl RubyMatch {
         let te = self.txt[t_i as usize].clone();
         let pe = self.pronunciation[p_j as usize].clone();
 
-        // te0 is guaranteed to exist due to tokenizer implementation
         let te0 = if te.starts_with('#') && te.len() > 1 {
             // Special case to try match some single char '#' links
             te[1..].chars()
         } else {
             te.chars()
-        }.next().unwrap();
+        }.next().expect("te0 is guaranteed to exist due to tokenizer implementation");
 
         let (max_arg, max_v) =
             if ruby_text_ignore().contains(&te0) {
