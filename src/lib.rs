@@ -2,6 +2,7 @@ pub mod common;
 pub mod english;
 pub mod ruby_match;
 pub mod segmentation;
+pub mod cantonese;
 
 use pyo3::prelude::*;
 
@@ -25,5 +26,7 @@ fn zilib(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
 
     m.add_function(wrap_pyfunction!(segmentation::end_user_friendly_segment_with_dictionary, m)?)?;
     m.add_function(wrap_pyfunction!(segmentation::end_user_friendly_segment, m)?)?;
+
+    m.add_function(wrap_pyfunction!(cantonese::get_ping3jam1, m)?)?;
     Ok(())
 }

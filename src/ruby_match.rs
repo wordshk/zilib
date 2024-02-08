@@ -5,34 +5,19 @@ the best match.
 */
 
 use crate::common;
+use crate::cantonese;
 use pyo3::pyfunction;
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
-
-//  A dictionary of (characters) => (lists of pronunciations)
-fn cantonese_charlist() -> &'static HashMap<char, HashSet<String>> {
-    static DATA: OnceLock<HashMap<char, HashSet<String>>> = OnceLock::new();
-    DATA.get_or_init(|| {
-        // I tried using https://github.com/SOF3/include-flate and it didn't seem to work in terms
-        // of file size reduction. Perhaps the overhead of decompression is too high.
-        let data = include_str!("../lists/charlist.json");
-
-        //               character  pronunciation count
-        let json : HashMap<char, HashMap<String, u64>> = serde_json::from_str(data).unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
-
-        // Strip the count from the json data and convert it to a HashSet.
-        json.into_iter().map(|(ch, pd)| (ch, pd.into_keys().map(|p| p).collect())).collect()
-    })
-}
 
 // A dictionary of (characters) => (lists of pronunciations stripped of tones)
 // This is useful when there are tonal changes (which often occurs in practice) that are not recognized by the char list.
 fn cantonese_charlist_half() -> &'static HashMap<char, Vec<String>> {
     static DATA: OnceLock<HashMap<char, Vec<String>>> = OnceLock::new();
     DATA.get_or_init(|| {
-        let charlist = cantonese_charlist();
+        let charlist = cantonese::charlist();
         charlist.iter()
-            .map(|(ch, pd)| (*ch, pd.iter().map(|p| p.trim_end_matches(&['1', '2', '3', '4', '5', '6']).to_string()).collect()))
+            .map(|(ch, pd)| (*ch, pd.keys().map(|p| p.trim_end_matches(&['1', '2', '3', '4', '5', '6']).to_string()).collect()))
             .collect()
     })
 }
@@ -245,7 +230,7 @@ impl RubyMatch {
                 // Case: this token is ignored, just continue to next token
                 let the_arg = (t_i - 1, p_j, false);
                 (the_arg, self._lcs(the_arg)) // returned to max_arg, max_v
-            } else if cantonese_charlist().get(&te0).map_or(false, |ps| ps.contains(&pe)) {
+            } else if cantonese::charlist().get(&te0).map_or(false, |ps| ps.contains_key(&pe)) {
                 // Case: match! (somewhat greedily since we could also have matched in the half
                 // part...) We consume both the token and the pronunciation, and add a
                 // FULL_MATCH_SCORE with CORRUPTION_SCORE adjustment

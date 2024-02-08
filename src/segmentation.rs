@@ -1,6 +1,7 @@
 use pyo3::pyfunction;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::OnceLock;
 
 /// Constants
 const BT_MATCH: i32 = 0;
@@ -159,11 +160,12 @@ pub fn end_user_friendly_segment(s: &str) -> (Vec<char>, Vec<char>, Vec<String>)
 }
 
 // load dictionary using include_str on csv
-fn load_dictionary() -> HashSet<String> {
-    let mut dictionary = HashSet::new();
-    let csv_data = include_str!("../lists/wordslist.csv");
-    for line in csv_data.split('\n') { // FIXME: Use a proper CSV parser
-        dictionary.insert(line.split(',').next().unwrap().to_string());
-    }
-    dictionary
+fn load_dictionary() -> &'static HashSet<String> {
+    static DATA: OnceLock<HashSet<String>> = OnceLock::new();
+    DATA.get_or_init(|| {
+        let json_data = include_str!("../lists/wordslist.json"); // FIXME: Change to csv and use a proper CSV parser
+        // get the keys from the hashmap
+        let data = serde_json::from_str::<HashMap<String, Vec<String>>>(json_data).unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
+        data.keys().cloned().collect()
+    })
 }
