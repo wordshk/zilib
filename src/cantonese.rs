@@ -57,7 +57,7 @@ fn get_ping3jam1_from_wordlist(s: &str) -> Vec<String> {
         // character instead.
         let word_pronunciation = wordlist.get(&segment).map(|ps| ps.iter().map(|p| p.clone()));
         if segment.chars().count() > 1 || word_pronunciation.is_some() {
-            result.push(word_pronunciation.unwrap().next().unwrap());
+            result.push(word_pronunciation.unwrap().next().unwrap()); // safe because the segmentation ensures that the word exists
         } else {
             for cps in get_ping3jam1_from_charlist_most_common(segment.chars().collect()) {
                 result.push(cps);
@@ -94,7 +94,7 @@ pub fn jyutping_validator_string() -> String {
 pub fn jyutping_validator() -> &'static Regex {
     static JYUTPING_RE: OnceLock<Regex> = OnceLock::new();
     JYUTPING_RE.get_or_init(|| {
-        Regex::new(&jyutping_validator_string()).unwrap()
+        Regex::new(&jyutping_validator_string()).unwrap() // XXX: unwrap error detectable immediately in tests
     })
 }
 

@@ -112,6 +112,7 @@ fn segment_with_dictionary(phrase: &str, dictionary: &HashSet<String>) -> (Vec<u
     _bt(0, n, &bt)
 }
 
+// TODO: review this
 fn sequence_filter(x: &[usize]) -> Vec<usize> {
     let mut ret = Vec::new();
     for i in 1..x.len() {
