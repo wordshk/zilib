@@ -3,10 +3,6 @@ name = "zilib"
 version = "0.1.0"
 edition = "2021"
 
-[[bin]]
-name = "zigen"
-path = "src/zigen.rs"
-
 [dependencies]
 bzip2 = "0.4.4"
 encoding_rs = "0.8.33"
