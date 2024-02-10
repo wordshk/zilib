@@ -1,0 +1,308 @@
+# Hong Kong standard character allow-list
+# Manually edited by editors of words.hk
+
+# This is not an exhaustive list of (traditional) characters used in Hong Kong.
+# Instead, we intend this to be as used as a reference to what words.hk considers
+# as "canonical" character forms. However, the fact that a character is not in
+# this list does not mean it is "invalid" (in fact you will find entries in
+# words.hk that are not in this list). It may mean the character is not common
+# enough for inclusion.
+#
+# We believe this list provides utility for checking against unintended uses of
+# variant forms, typos (characters that look similar that are hard to spot
+# visually), etc.
+#
+# We welcome suggestions for changes on this list, but inclusion of any character
+# must satisfy the requirement that it is commonly used in modern Hong Kong
+# contexts. -- words.hk
+
+### The obviously needed ones
+㖭
+㗎
+㨴
+㷫
+乜
+乸
+亢
+仝
+佢
+侄
+俬
+儕
+冇
+冧
+劏
+叻
+吓
+吔
+吖
+咁
+咗
+哋
+唓
+啩
+啫
+啱
+啲
+喎
+喵
+喺
+喼
+嗌
+嗒
+嗝
+嗰
+嗱
+嗲
+嘅
+嘞
+嘢
+嘥
+噃
+噉
+噏
+噼
+嚟
+嚿
+囍
+埲
+奀
+嫲
+嬅
+嬲
+孖
+孭
+孻
+屌
+忟
+忪
+扑
+拃
+捅
+捽
+掂
+掟
+掹
+揞
+揸
+揼
+揾
+搐
+搣
+摵
+擸
+攞
+攰
+晒
+曇
+楣
+殭
+淥
+瀡
+烚
+燶
+燶
+眯
+睄
+瞓
+筲
+腍
+腩
+膶
+蔘
+誹
+諗
+跣
+軚
+轆
+鄺
+鉸
+鎗
+鑊
+閹
+髀
+𠻹
+𠽌
+𡃁
+𣲷
+𨋢
+吽哣
+囡囝
+邋遢
+冚唪唥
+燉
+𠺝
+炆
+摷
+滕
+摙
+揈
+# 噃
+啵
+躝
+鎧
+茜
+呔
+脷
+笈
+嘜
+𥄫
+踎
+姫
+獠
+錮
+懾
+祂
+暱
+忐忑
+掰
+咇
+啓
+埕
+謔
+嚹
+孌
+扱
+鮓
+
+### Override of edb list
+# Remove this -- hfchan says this is wrong.
+!啟
+# : 點解教育局會㨂脣㗎
+!脣
+唇
+# edb says 祕
+秘
+!祕
+# edb says 羣 but we decide to override
+群
+!羣
+
+### Notable (but probably correct) entries ###
+# 抆 may be variant of 抿 but there can be diff
+抆
+# Apparently some people use this as 嗰 too (which we think should be mapped to
+# 嗰 by default). But we can't just put it on the conversion map because of 箇中
+箇
+# 可能通「喺」，不過讀音都唔同，唔好map住
+响
+# May be 棟
+戙
+# Can also be 口+氹 (I can't type it properly with my text editor now) but can be used without the 口 so we have to include it here.
+氹
+𠱁
+# edb has 叱 but not 咤 :o)
+咤
+# 深水埗
+埗
+# 鉅細無遺
+鉅
+# May be 砰 or 口+棒
+嘭
+# might want to map directly to 卡
+咭
+# might same as 啃 but for 哽咽
+哽
+# not included in words.hk but we may want to add this as well. also may consider automap to 遮
+摭
+# more than one meaning depending on I suppose
+尻
+# Capitalist reign of terror
+恒
+# Might not be standard but mapping will be inaccurate due to multiple meanings
+嘎
+# Not hk std but might map to multiple chars
+噶
+# jaak3
+喫
+# 同跡 (hfhchan: 蹟跡迹 同 線綫 一樣，放 (3))
+迹
+綫
+# Add this back and avoid controversy
+畀
+### End Notable ###
+
+# Unsure but probably should be on this list
+黐
+箍
+戥
+殞
+撳
+屙
+偈
+諳
+戇
+唚
+# 奇蹟
+蹟
+劊
+誒
+唏
+佚
+閪
+# 噚晚 supposedly but also can be 唚 (long winded)
+噚
+枷
+丼
+啷
+噁
+謳
+掕
+晾
+罅
+擤
+砵
+溏
+擗
+栢
+薈
+攋
+唞
+燊
+勳
+醍醐
+錙
+# 咇?
+嗶
+# some wrong usage of 拿掐 (should be 捏) but maybe a good candidate for nin2?
+掐
+忤
+猢猻
+欸
+趷
+踭
+扚
+𠺢
+冗
+笪
+芯
+耷
+咔嚓
+# biu1
+飆
+# need map to 抖?
+唞
+厹
+# probably need to map with 歎 if we are compliant with edb's list
+嘆
+𠝹
+𥅈
+芷
+磡
+鎚
+鑫
+囧
+摻
+旮 旯
+揶 揄
+覷
+摌
+𡁻
+斌
+媪
+盅
+蟄
+
+# defined in wordshk but need check (might want to map or make into a high risk word)
+纈 扤 冼 揦 嗄 泵 樖 罌 箸 拑 齙 掁 咓 罨 侷 嚡 佘 啹 啋 髹 癦  抦 縝 寰 醮 癇 噌 皙 鶩 儆 鯇 紓 埞 瞅 搥 幡 譖 暄糰痠鯭鏹醮芡蝟酶衲踉蹌篋緲胺掗啅捋諛仵浣酮洒擝鰂鐧蜆骹呤芫硤輋烷呠眈瘌獒醛讕驍儻倜粘詡饉闕痍搲薏蒟蒻鬟譭糍饈龕敕佼
+𠶧 𢳂 𢲡 𢭃𢱕𤓓𠾴𦧲𠺘𠱸𦟌

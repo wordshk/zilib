@@ -80,3 +80,8 @@ SUCH DAMAGE.
 - wordslist.json - newer snapshot of words.hk data from https://words.hk/faiman/analysis/wordslist.json
   - TODO: change this to csv (makes it easier to track diff history)
   - Public Domain.
+
+- edb_charlist.txt - list of Hong Kong common characters from EDB ( https://www.edbchinese.hk/lexlist_ch/ )
+
+- wordshk_charlist.txt - list of canonical Hong Kong characters, maintained by words.hk
+  - intended as a "patch" on edb_charlist.txt. Lines starting with '!' removes the entry from the edb list (if it exists there).
