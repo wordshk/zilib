@@ -97,14 +97,17 @@ fn _bt(
     (odd, seg)
 }
 
-/// TODO: We probably want to have a helper function to return the strings
-/// instead of offsets. For great justice.
 fn segment_with_dictionary(phrase: &str, dictionary: &HashSet<String>) -> (Vec<usize>, Vec<usize>) {
+    let chars : Vec<char> = phrase.chars().collect();
+    let n = chars.len();
+
+    if n == 0 {
+        return (vec![], vec![]);
+    }
+
     let mut dp: HashMap<(usize, usize), f32> = HashMap::new();
     let mut bt: HashMap<(usize, usize), i32> = HashMap::new();
 
-    let chars : Vec<char> = phrase.chars().collect();
-    let n = chars.len();
     _dp(0, n, &chars, dictionary, &mut dp, &mut bt);
     _bt(0, n, &bt)
 }
