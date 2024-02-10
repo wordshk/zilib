@@ -4,10 +4,13 @@ rust_all: zigen_data
 lint:
 	cargo clippy
 
-target/debug/%:
-	cargo build --bins
+target/debug/%: lists/wordslist.json
+	cargo build --bins --no-default-features
 
 zigen_data: lists/english_variants.json
+
+lists/wordslist.json:
+	cd lists && curl -O https://words.hk/faiman/analysis/wordslist.json
 
 lists/%.json: lists/varcon.txt.bz2 target/debug/zigen
 	# Funny enough make's basename doesn't strip away the directory...

@@ -3,6 +3,7 @@ use std::sync::OnceLock;
 
 // Thread-safe rust function that reads a file on first call and returns the content, otherwise
 // return the cached value
+#[cfg(feature = "generated_data")]
 fn english_variants_data() -> &'static HashMap<String, String> {
     static DATA: OnceLock<HashMap<String, String>> = OnceLock::new();
     DATA.get_or_init(|| {
@@ -13,6 +14,7 @@ fn english_variants_data() -> &'static HashMap<String, String> {
     })
 }
 
+#[cfg(feature = "generated_data")]
 pub fn usa_english(word : &str) -> String {
     english_variants_data().get(word).unwrap_or(&word.to_string()).to_string()
 }

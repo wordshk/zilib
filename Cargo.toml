@@ -14,3 +14,8 @@ encoding_rs_io = "0.1.7"
 regex = "1.10.3"
 serde_json = "1.0.113"
 unicode_categories = "0.1.1"
+
+[features]
+default = ["generated_data"]
+generated_data = []
+
