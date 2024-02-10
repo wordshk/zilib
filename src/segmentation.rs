@@ -1,4 +1,3 @@
-use pyo3::pyfunction;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::OnceLock;
@@ -128,7 +127,6 @@ fn sequence_filter(x: &[usize]) -> Vec<usize> {
 
 /// Returns a user-friendly segmentation result for text-based programs. May incur performance
 /// overhead due to cross-language barrier copying of the dictionary.
-#[pyfunction]
 pub fn end_user_friendly_segment_with_dictionary(s: &str, dictionary: HashSet<String>) -> (Vec<char>, Vec<char>, Vec<String>) {
     _end_user_friendly_segment_with_dictionary(s, &dictionary)
 }
@@ -153,7 +151,6 @@ fn _end_user_friendly_segment_with_dictionary(s: &str, dictionary: &HashSet<Stri
 }
 
 /// Returns a user-friendly segmentation result for text-based programs.
-#[pyfunction]
 pub fn end_user_friendly_segment(s: &str) -> (Vec<char>, Vec<char>, Vec<String>) {
     let dictionary = load_dictionary();
     _end_user_friendly_segment_with_dictionary(s, &dictionary)

@@ -1,4 +1,3 @@
-use pyo3::pyfunction;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 use crate::segmentation;
@@ -65,7 +64,6 @@ fn get_ping3jam1_from_wordlist(s: &str) -> Vec<String> {
     result
 }
 
-#[pyfunction]
 /// Gets the pronunciation of a Cantonese string on a best effort basis. Each returned result
 /// corresponds to a character in the input string. IF there are multiple pronunciations for a
 /// character, multiple results are returned. If a character is not found in the dictionary, an
@@ -82,7 +80,6 @@ const JYUTPING_CONSONANTS : &str = "(b|p|m|f|d|t|n|l|g|k|ng|h|gw|kw|w|z|c|s|j)";
 const JYUTPING_FINALS : &str = "(i|ip|it|ik|im|in|ing|iu|yu|yut|yun|u|up|ut|uk|um|un|ung|ui|e|ep|et|ek|em|en|eng|ei|eu|eot|eon|eoi|oe|oet|oek|oeng|o|ot|ok|on|ong|oi|ou|op|om|a|ap|at|ak|am|an|ang|ai|au|aa|aap|aat|aak|aam|aan|aang|aai|aau|m|ng)";
 const JYUTPING_TONES : &str = "[1-6]";
 
-#[pyfunction]
 /// Regex string for validating formatting of Jyutping. Does not try to determine whether the
 /// pronunciation is valid.
 pub fn jyutping_validator_string() -> String {
@@ -100,7 +97,6 @@ pub fn jyutping_validator() -> &'static Regex {
 
 /// Validates the formatting of a Jyutping string. Does not try to determine whether the
 /// pronunciation is valid.
-#[pyfunction]
 pub fn is_jyutping_valid(jyutping: &str) -> bool {
     jyutping_validator().is_match(jyutping)
 }

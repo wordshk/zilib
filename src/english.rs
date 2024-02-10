@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::sync::OnceLock;
-use pyo3::pyfunction;
 
 // Thread-safe rust function that reads a file on first call and returns the content, otherwise
 // return the cached value
@@ -14,7 +13,6 @@ fn english_variants_data() -> &'static HashMap<String, String> {
     })
 }
 
-#[pyfunction]
 pub fn usa_english(word : &str) -> String {
     english_variants_data().get(word).unwrap_or(&word.to_string()).to_string()
 }
@@ -465,7 +463,6 @@ impl PorterStemmer {
     }
 }
 
-#[pyfunction]
 pub fn american_english_stem(w: &str) -> String {
     let mut stemmer = PorterStemmer::new(w);
     stemmer.stem()

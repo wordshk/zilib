@@ -6,7 +6,6 @@ the best match.
 
 use crate::common;
 use crate::cantonese;
-use pyo3::pyfunction;
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
 
@@ -138,7 +137,6 @@ fn _text_tokenizer(txt: &str) -> Vec<String> {
 /// 1. The plain text with the ruby annotations. Useful for unit testing (since the results are easier to understand)
 /// 2. A zipped (token, pronunciation) list of the structure of the match.
 /// 3. The html representation of the match. Useful for just rendering the match in a web page.
-#[pyfunction]
 pub fn ruby_match(txt: &str, pronunciation: &str) -> (String, Vec<(String, String)>, String) {
     let mut rm = RubyMatch::new(txt, pronunciation);
     rm.run();
