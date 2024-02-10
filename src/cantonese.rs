@@ -2,6 +2,7 @@ use pyo3::pyfunction;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 use crate::segmentation;
+use regex::Regex;
 
 // A dictionary of (characters) => (lists of pronunciations)
 pub fn charlist() -> &'static HashMap<char, HashMap<String, u64>> {
@@ -71,4 +72,35 @@ fn get_ping3jam1_from_wordlist(s: &str) -> Vec<String> {
 /// empty list is returned.
 pub fn get_ping3jam1(s: &str) -> String {
     get_ping3jam1_from_wordlist(s).join(" ")
+}
+
+// From http://humanum.arts.cuhk.edu.hk/Lexis/Canton2/syllabary/ , revised manually with
+// suggestions by Chaaak (updates from LSHK), and some are our own modifications (IIRC).
+// Some combinations do not make sense, but these functions are not supposed to validate the
+// pronunciations, but rather to just validate the format.
+const JYUTPING_CONSONANTS : &str = "(b|p|m|f|d|t|n|l|g|k|ng|h|gw|kw|w|z|c|s|j)";
+const JYUTPING_FINALS : &str = "(i|ip|it|ik|im|in|ing|iu|yu|yut|yun|u|up|ut|uk|um|un|ung|ui|e|ep|et|ek|em|en|eng|ei|eu|eot|eon|eoi|oe|oet|oek|oeng|o|ot|ok|on|ong|oi|ou|op|om|a|ap|at|ak|am|an|ang|ai|au|aa|aap|aat|aak|aam|aan|aang|aai|aau|m|ng)";
+const JYUTPING_TONES : &str = "[1-6]";
+
+#[pyfunction]
+/// Regex string for validating formatting of Jyutping. Does not try to determine whether the
+/// pronunciation is valid.
+pub fn jyutping_validator_string() -> String {
+    format!("^{}?{}{}", JYUTPING_CONSONANTS, JYUTPING_FINALS, JYUTPING_TONES)
+}
+
+/// Regex for validating formatting of Jyutping. Does not try to determine whether the
+/// pronunciation is valid.
+pub fn jyutping_validator() -> &'static Regex {
+    static JYUTPING_RE: OnceLock<Regex> = OnceLock::new();
+    JYUTPING_RE.get_or_init(|| {
+        Regex::new(&jyutping_validator_string()).unwrap()
+    })
+}
+
+/// Validates the formatting of a Jyutping string. Does not try to determine whether the
+/// pronunciation is valid.
+#[pyfunction]
+pub fn is_jyutping_valid(jyutping: &str) -> bool {
+    jyutping_validator().is_match(jyutping)
 }

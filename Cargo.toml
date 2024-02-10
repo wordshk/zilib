@@ -8,6 +8,7 @@ name = "zigen"
 path = "src/zigen.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# Also see https://github.com/rust-lang/cargo/issues/4881
 [lib]
 name = "zilib"
 crate-type = ["cdylib"]

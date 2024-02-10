@@ -28,5 +28,12 @@ fn zilib(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(segmentation::end_user_friendly_segment, m)?)?;
 
     m.add_function(wrap_pyfunction!(cantonese::get_ping3jam1, m)?)?;
+
+    m.add_function(wrap_pyfunction!(cantonese::jyutping_validator_string, m)?)?;
+    m.add_function(wrap_pyfunction!(cantonese::is_jyutping_valid, m)?)?;
+
     Ok(())
+}
+
+pub fn hello() {
 }
