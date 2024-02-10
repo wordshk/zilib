@@ -17,152 +17,41 @@
 # contexts. -- words.hk
 
 ### The obviously needed ones
-㖭
-㗎
-㨴
-㷫
-乜
-乸
-亢
-仝
-佢
-侄
-俬
-儕
-冇
-冧
+乜 乸 亢
+仝 佚 佢 侄 俬 偈 儕
+冇 冗 冧
 劏
-叻
-吓
-吔
-吖
-咁
-咗
-哋
-唓
-啩
-啫
-啱
-啲
-喎
-喵
-喺
-喼
-嗌
-嗒
-嗝
-嗰
-嗱
-嗲
-嘅
-嘞
-嘢
-嘥
-噃
-噉
-噏
-噼
-嚟
-嚿
-囍
-埲
+叻 吓 吔 吖 呔 咁 咇 咗 哋 唓 㖭 啓 啩 啱 啲 啵 㗎 啫 喎 喵 喺 喼 嗌 嗒 嗰 嗱 嗲 𠺝 嘅 嘜 嘞 嘢 嘥 𠻹 𠽌 噃 噉 噏 噼 嚟 𡃁 嚹 嚿 囍
+埕 埲
 奀
-嫲
-嬅
-嬲
-孖
-孭
-孻
-屌
-忟
-忪
-扑
-拃
-捅
-捽
-掂
-掟
-掹
-揞
-揸
-揼
-揾
-搐
-搣
-摵
-擸
-攞
+姫 嫲 嬅 嬲 孌
+孖 孭 孻
+屌 屙
+忟 忪 懾 戇
+戥
+扑 扱 拃 捅 捽 掂 掟 掰 掹 揈 揞 揸 揼 揾 搐 搣 㨴 摙 摵 摷 撳 擸 攞
 攰
-晒
-曇
+晒 暱 曇
 楣
-殭
-淥
-瀡
-烚
-燶
-燶
-眯
-睄
-瞓
-筲
-腍
-腩
-膶
-蔘
-誹
-諗
-跣
-軚
-轆
-鄺
-鉸
-鎗
-鑊
-閹
-髀
-𠻹
-𠽌
-𡃁
-𣲷
-𨋢
-吽哣
-囡囝
-邋遢
-冚唪唥
-燉
-𠺝
-炆
-摷
-滕
-摙
-揈
-# 噃
-啵
-躝
-鎧
-茜
-呔
-脷
-笈
-嘜
-𥄫
-踎
-姫
+殞 殭
+淥 滕 瀡
+炆 烚 㷫 燉 燶
 獠
-錮
-懾
+𥄫 眯 睄 瞓
+砵
 祂
-暱
-忐忑
-掰
-咇
-啓
-埕
-謔
-嚹
-孌
-扱
+笈 筲 箍
+罅
+脷 腍 腩 膶
+茜 蔘
+覷
+誹 諗 諳 謔
+跣 踎 躝
+軚 𨋢 轆
+鄺
+鉸 錮 鎗 鎧 鑊
+閪 閹
+髀
 鮓
 
 ### Override of edb list
@@ -177,6 +66,27 @@
 # edb says 羣 but we decide to override
 群
 !羣
+
+# with word examples
+吽哣
+囡囝
+邋遢
+冚唪唥
+忐忑
+醍醐
+猢猻
+旮旯
+揶揄
+黐𣲷
+
+# 奇(蹟)
+蹟
+# 深水(埗)
+埗
+# (鉅)細無遺
+鉅
+# (劊)子手
+劊
 
 ### Notable (but probably correct) entries ###
 # 抆 may be variant of 抿 but there can be diff
@@ -193,10 +103,6 @@
 𠱁
 # edb has 叱 but not 咤 :o)
 咤
-# 深水埗
-埗
-# 鉅細無遺
-鉅
 # May be 砰 or 口+棒
 嘭
 # might want to map directly to 卡
@@ -222,86 +128,50 @@
 畀
 ### End Notable ###
 
-# Unsure but probably should be on this list
-黐
-箍
-戥
-殞
-撳
-屙
-偈
-諳
-戇
-唚
-# 奇蹟
-蹟
-劊
-誒
-唏
-佚
-閪
-# 噚晚 supposedly but also can be 唚 (long winded)
-噚
-枷
+# Unsure (by somebody who doesn't know characters [m sik zi]) but probably should be on this list
 丼
-啷
-噁
-謳
-掕
-晾
-罅
-擤
-砵
-溏
-擗
-栢
-薈
-攋
-唞
-燊
+𠝹
 勳
-醍醐
-錙
+厹
+咔
+唏 唚 唞 啷 𠺢 噁 嚓 𡁻
+囧
+媪
+忤
+扚 掕 摌 摻 擗 擤 攋
+斌
+晾
+枷
+欸
+溏
+燊
+盅
+𥅈
+磡
+笪
+耷
+芯 芷 薈
+蟄
+誒 謳
+趷 踭
+錙 鎚 鑫
+
+# 張栢芝 (vs 張柏芝)
+栢
 # 咇?
 嗶
 # some wrong usage of 拿掐 (should be 捏) but maybe a good candidate for nin2?
 掐
-忤
-猢猻
-欸
-趷
-踭
-扚
-𠺢
-冗
-笪
-芯
-耷
-咔嚓
 # biu1
 飆
 # need map to 抖?
 唞
-厹
 # probably need to map with 歎 if we are compliant with edb's list
 嘆
-𠝹
-𥅈
-芷
-磡
-鎚
-鑫
-囧
-摻
-旮 旯
-揶 揄
-覷
-摌
-𡁻
-斌
-媪
-盅
-蟄
+# (噚)晚 supposedly but also can be 唚 (long winded)
+噚
+# gaak3 vs "urk" (打嗝)
+嗝
 
 # defined in wordshk but need check (might want to map or make into a high risk word)
 纈 扤 冼 揦 嗄 泵 樖 罌 箸 拑 齙 掁 咓 罨 侷 嚡 佘 啹 啋 髹 癦  抦 縝 寰 醮 癇 噌 皙 鶩 儆 鯇 紓 埞 瞅 搥 幡 譖 暄糰痠鯭鏹醮芡蝟酶衲踉蹌篋緲胺掗啅捋諛仵浣酮洒擝鰂鐧蜆骹呤芫硤輋烷呠眈瘌獒醛讕驍儻倜粘詡饉闕痍搲薏蒟蒻鬟譭糍饈龕敕佼
