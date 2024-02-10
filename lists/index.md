@@ -74,12 +74,16 @@ SUCH DAMAGE.
 
 - charlist.json - old snapshot of words.hk data from https://words.hk/faiman/analysis/
   - TODO: update this.
-  - TODO: change this to csv (makes it easier to track diff history)
+  - TODO: change this to csv (makes it easier to track diff history) - Note that the current csv version has less data (no counts) :-/
   - Public Domain.
 
-- wordslist.json - newer snapshot of words.hk data from https://words.hk/faiman/analysis/wordslist.json
-  - TODO: change this to csv (makes it easier to track diff history)
+- wordslist.csv - newer snapshot of words.hk data from https://words.hk/faiman/analysis/wordslist.csv
   - Public Domain.
+  - Note that we are well aware of a multitude of various potential errors and
+    (linguistically) controversial entries in the list. See "Decision Problem
+    Avoidance" in README.md. Feel free to report errors, but PRs against this
+    file will not be accepted since the file is downloaded directly from
+    words.hk data source.
 
 - edb_charlist.txt - list of Hong Kong common characters from EDB ( https://www.edbchinese.hk/lexlist_ch/ )
 

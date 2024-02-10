@@ -12,7 +12,7 @@ pub fn charlist() -> &'static HashMap<char, HashMap<String, u64>> {
         let json_data = include_str!("../lists/charlist.json");
 
         //               character  pronunciation count
-        let data : HashMap<char, HashMap<String, u64>> = serde_json::from_str(json_data).unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
+        let data : HashMap<char, HashMap<String, u64>> = serde_json::from_str(json_data).unwrap(); // XXX: unwrap error detectable immediately in tests
 
         data
     })
@@ -22,11 +22,14 @@ pub fn charlist() -> &'static HashMap<char, HashMap<String, u64>> {
 pub fn wordlist() -> &'static HashMap<String, Vec<String>> {
     static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
     DATA.get_or_init(|| {
-        let json_data = include_str!("../lists/wordslist.json");
-
-        //               character  pronunciation
-        let data : HashMap<String, Vec<String>> = serde_json::from_str(json_data).unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
-
+        let csv_data = include_str!("../lists/wordslist.csv");
+        let mut data = HashMap::new();
+        let mut reader = csv::ReaderBuilder::new().has_headers(true).comment(Some(b'#')).flexible(true).from_reader(csv_data.as_bytes());
+        for result in reader.records() {
+            let record = result.unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
+            let pronunciations = record.iter().skip(1).map(|s| s.to_string()).collect();
+            data.insert(record[0].to_string(), pronunciations);
+        }
         data
     })
 }

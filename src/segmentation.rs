@@ -163,9 +163,13 @@ pub fn end_user_friendly_segment(s: &str) -> (Vec<char>, Vec<char>, Vec<String>)
 fn load_dictionary() -> &'static HashSet<String> {
     static DATA: OnceLock<HashSet<String>> = OnceLock::new();
     DATA.get_or_init(|| {
-        let json_data = include_str!("../lists/wordslist.json"); // FIXME: Change to csv and use a proper CSV parser
-        // get the keys from the hashmap
-        let data = serde_json::from_str::<HashMap<String, Vec<String>>>(json_data).unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
-        data.keys().cloned().collect()
+        let csv_data = include_str!("../lists/wordslist.csv");
+        let mut data = HashSet::new();
+        let mut reader = csv::ReaderBuilder::new().has_headers(true).comment(Some(b'#')).flexible(true).from_reader(csv_data.as_bytes());
+        for result in reader.records() {
+            let record = result.unwrap(); // XXX: unwrap error detectable immediately in tests
+            data.insert(record[0].to_string());
+        }
+        data
     })
 }
