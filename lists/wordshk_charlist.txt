@@ -6,7 +6,8 @@
 # as "canonical" character forms. However, the fact that a character is not in
 # this list does not mean it is "invalid" (in fact you will find entries in
 # words.hk that are not in this list). It may mean the character is not common
-# enough for inclusion.
+# enough for inclusion, alternatively, it may mean we prefer another variant
+# from a dictionary point of view.
 #
 # We believe this list provides utility for checking against unintended uses of
 # variant forms, typos (characters that look similar that are hard to spot

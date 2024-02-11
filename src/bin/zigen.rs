@@ -9,7 +9,10 @@ use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::{self, BufRead, BufReader, Write, Seek};
+use zilib::common;
+use zilib::cjk;
+use zilib::unihan;
 
 /*
 # More details about file format of varcon can be found in:
@@ -183,6 +186,62 @@ SUCH DAMAGE.
     Ok(())
 }
 
+fn wordshk_character_set() -> HashSet<char> {
+    let mut resultset = HashSet::new();
+    let set_files = vec!["./lists/edb_charlist.txt", "./lists/wordshk_charlist.txt"];
+    for f in set_files {
+        let file = File::open(f).expect(format!("File {} not found", f).as_str());
+        for line in BufReader::new(file).lines() {
+            let line = line.expect(format!("Error reading file {}", f).as_str());
+            let line = line.trim();
+            if line.is_empty() {
+                continue;
+            }
+            if line.starts_with('#') {
+                continue;
+            }
+            if line.starts_with('!') {
+                for c in line.chars().skip(1) {
+                    if common::is_cjk_cp(c as u32) {
+                        resultset.remove(&c);
+                    }
+                }
+            } else {
+                for c in line.chars() {
+                    if common::is_cjk_cp(c as u32) {
+                        resultset.insert(c);
+                    }
+                }
+            }
+        }
+    }
+    resultset
+}
+
+fn generate_wordshk_charset(out_filename : &str) -> io::Result<()> {
+    let canonical_set = wordshk_character_set();
+    let unihan_data = unihan::unihan_data(); // this can be a slow operation
+    let mut out_file = File::create(out_filename)?;
+    writeln!(out_file, "[")?;
+
+    let mut last_radical_label : Option<&str> = None;
+    for c in sorted_by(canonical_set.iter(), |a, b| cjk::radical_char_cmp(a, b)).iter() {
+        let (this_radical_label, _) = unihan_data.get(c).map(|uh| uh.get_radical_strokes()).unwrap_or((None, None));
+        if this_radical_label != last_radical_label {
+            // println!();
+            write!(out_file, "\n")?;
+            last_radical_label = this_radical_label;
+        }
+        write!(out_file, " \"{}\",", c)?;
+    }
+
+    // backtrack one character to remove the trailing comma
+    out_file.seek(io::SeekFrom::End(-1))?;
+    writeln!(out_file, "")?;
+    writeln!(out_file, "]")?;
+    Ok(())
+}
+
 // Function that takes an iterator and returns another vector that is sorted
 fn sorted<T: Ord, I: Iterator<Item=T>>(iter: I) -> Vec<T> {
     let mut v: Vec<_> = iter.collect();
@@ -216,6 +275,7 @@ fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     match (args.get(1).map(String::as_str), args.get(2), args.get(3)) {
         (Some("generate_english_variants"), Some(filename), Some(out_filename) ) => generate_english_variants(filename, out_filename),
+        (Some("generate_wordshk_charset"), Some(out_filename), _) => generate_wordshk_charset(out_filename),
         _ => {
             usage();
             Err(io::Error::new(io::ErrorKind::InvalidInput, "Invalid usage"))
