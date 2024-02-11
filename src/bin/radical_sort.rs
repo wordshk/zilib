@@ -18,7 +18,7 @@ fn radical_cmp_debug(a: &Vec<char>, b: &Vec<char>) -> std::cmp::Ordering {
     cmp
 }
 
-// TODO: Decide whether we want in-place or out-of-place sorting
+// TODO: Not very sure what's the best way to transform and pass the vectors here.
 fn radical_sort_vc(mut v: Vec<Vec<char>>, debug: bool) -> Vec<Vec<char>> {
     if debug {
         v.sort_by(radical_cmp_debug);
@@ -28,7 +28,7 @@ fn radical_sort_vc(mut v: Vec<Vec<char>>, debug: bool) -> Vec<Vec<char>> {
     v
 }
 
-fn radical_sort(v: Vec<String>, debug: bool) -> Vec<String> {
+fn radical_sort(v: &Vec<String>, debug: bool) -> Vec<String> {
     radical_sort_vc(v.iter().map(|s| s.chars().collect()).collect(), debug).iter().map(|v| v.iter().collect()).collect()
 }
 
@@ -48,7 +48,7 @@ fn main() {
         }
     }
 
-    for s in radical_sort(v, debug) {
+    for s in radical_sort(&v, debug) {
         println!("{}", s);
     }
 }
