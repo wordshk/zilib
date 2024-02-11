@@ -43,10 +43,10 @@ detail by Lau (2019):
 Note that in zilib, we work on lists where characters/words are either *in* the
 list or *not*. These are "decision problems" that are unavoidable due to the
 nature of the library. We also do not have the luxury of further explaining the
-*apparently* clear-cut decisions, therefore such decisions may look somewhat
-arbitrary at the edges. This is an unfortunate fact when we are building a
-library that is used by many people who may be each operating under slightly
-different circumstances, contexts and requirements.
+*apparently* clear-cut decisions (at least not within the API), therefore such
+decisions may look somewhat arbitrary at the edges. This is an unfortunate fact
+when we are building a library that is used by many people who may be each
+operating under slightly different circumstances, contexts and requirements.
 
 Nuances and edge cases can often by handled by further complicating the
 "interface" (i.e. the library API), but this makes the library harder to use.
