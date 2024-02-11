@@ -1,11 +1,10 @@
 // Sort a vector of strings by the CJK radical
 
-use zilib::unihan;
 use zilib::cjk;
 
 // call radical_cmp and print debug info
 fn radical_cmp_debug(a: &Vec<char>, b: &Vec<char>) -> std::cmp::Ordering {
-    let unihan_data = unihan::unihan_data(); // this can be a slow operation
+    let unihan_data = cjk::unihan_data(); // this can be a slow operation
     let cmp = cjk::radical_cmp(a, b);
     println!("radical_cmp({:?}, {:?}) = {:?}", a.get(0), b.get(0), cmp);
     if let Some(a0) = a.get(0) {

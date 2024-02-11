@@ -12,7 +12,6 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write, Seek};
 use zilib::common;
 use zilib::cjk;
-use zilib::unihan;
 
 /*
 # More details about file format of varcon can be found in:
@@ -220,7 +219,7 @@ fn wordshk_character_set() -> HashSet<char> {
 
 fn generate_wordshk_charset(out_filename : &str) -> io::Result<()> {
     let canonical_set = wordshk_character_set();
-    let unihan_data = unihan::unihan_data(); // this can be a slow operation
+    let unihan_data = cjk::unihan_data(); // this can be a slow operation
     let mut out_file = File::create(out_filename)?;
     writeln!(out_file, "[")?;
 
