@@ -19,7 +19,8 @@ use zilib::cjk;
 # - https://github.com/en-wl/wordlist/blob/master/varcon/README
 */
 
-fn generate_english_variants(filename : &str, out_filename : &str) -> io::Result<()> {
+fn generate_english_variants(out_filename : &str) -> io::Result<()> {
+    let filename = "./lists/varcon.txt.bz2";
 
     // Read the file as bzip2 instead of plain text. The file is in ISO-8859-1 encoding (also known
     // as Windows-1252)
@@ -267,14 +268,14 @@ fn is_suffix(s: &str, ref_set: &HashSet<String>) -> bool {
 fn usage() {
     println!("Usage: zigen <command> <args>");
     println!("Commands:");
-    println!("  generate_english_variants <filename> <output_filename> - Generate a map of English variants from the varcon file");
+    println!("  generate_english_variants <output_filename> - Generate a map of English variants from the varcon file");
 }
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
-    match (args.get(1).map(String::as_str), args.get(2), args.get(3)) {
-        (Some("generate_english_variants"), Some(filename), Some(out_filename) ) => generate_english_variants(filename, out_filename),
-        (Some("generate_wordshk_charset"), Some(out_filename), _) => generate_wordshk_charset(out_filename),
+    match (args.get(1).map(String::as_str), args.get(2)) {
+        (Some("generate_english_variants"), Some(out_filename) ) => generate_english_variants(out_filename),
+        (Some("generate_wordshk_charset"), Some(out_filename)) => generate_wordshk_charset(out_filename),
         _ => {
             usage();
             Err(io::Error::new(io::ErrorKind::InvalidInput, "Invalid usage"))
