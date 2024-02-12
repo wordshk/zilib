@@ -186,73 +186,70 @@ pub fn binary_search_file(
             // record
             let field_delim_idx = line_buf[field_start_idx..].iter().position(|&x| x == field_delim || x == record_delim);
 
-            match field_delim_idx {
-                Some(field_delim_idx) => {
-                    if let Some(record_delim_idx) = record_delim_idx {
-                        // println!("inserting record_delim_idx: {}", mid + record_delim_idx + 1);
-                        known_start_of_line_positions.insert(mid + record_delim_idx + 1);
-                    }
-
-                    let next_record_delim_idx = if line_buf[field_delim_idx] == record_delim {
-                        record_delim_idx
-                    } else {
-                        line_buf[field_delim_idx..].iter().position(|&x| x == record_delim).map(|x| x + field_delim_idx)
-                    };
-
-                    let what = &line_buf[field_start_idx..(field_start_idx + field_delim_idx)];
-
-                    // line buf
-                    assert!(next_record_delim_idx.is_none() || line_buf[next_record_delim_idx.unwrap()] == record_delim);
-
-                    let ordering = cmp(what, target);
-
-                    // println!("what={:?}, {:?}, target={:?} start_pos={}", String::from_utf8_lossy(what), ordering, String::from_utf8_lossy(target), start_pos);
-
-                    // We found the record. Yay!
-                    match (ordering, record_delim_idx) {
-                        (Ordering::Equal, Some(record_delim_idx)) => {
-                            // We can't break here because there may be multiple records.
-                            // Instead we have to find the position of the record that is
-                            // *just* smaller than target
-                            let proposed_end = mid + record_delim_idx + 1;
-
-                            // only update first_found_line_idx if it's None or if the
-                            // field_delim_idx is smaller
-                            first_found_line_idx = first_found_line_idx.map(|x : usize| x.min(mid + field_start_idx)).or(Some(mid + field_start_idx));
-                            // print!("ORDERING FOUND: ** first_found_line_idx={} mid={} field_start_idx={}\n", first_found_line_idx.unwrap(), mid, field_start_idx);
-
-                            if proposed_end >= end_pos {
-                                end_pos = mid;
-                            } else {
-                                end_pos = proposed_end;
-                            }
-                        }
-                        (Ordering::Equal, None) => {
-                            assert!(false, "Not sure how to deal with this yet.");
-                        }
-                        (Ordering::Less, _) => {
-                            start_pos = mid;
-                            if let Some(next_record_delim_idx) = next_record_delim_idx {
-                                // Note, in some cases this will cause the whole loop to end. But
-                                // we may not have checked whether the line starting with start_pos
-                                // also has the target value. So at the end we may need to double
-                                // check
-                                start_pos = mid + next_record_delim_idx + 1;
-                                // print!("ORDERING LESS: mid:{} next_record_delim_idx:{} new start_pos:{}\n", mid, next_record_delim_idx, start_pos);
-                                known_start_of_line_positions.insert(start_pos);
-                            }
-                        }
-                        (Ordering::Greater, _) => {
-                            end_pos = mid;
-                        }
-                    }
-
-                    break;
-                },
-                None => {
-                    line_size *= 2;
-                    continue;
+            if let Some(field_delim_idx) = field_delim_idx {
+                if let Some(record_delim_idx) = record_delim_idx {
+                    // println!("inserting record_delim_idx: {}", mid + record_delim_idx + 1);
+                    known_start_of_line_positions.insert(mid + record_delim_idx + 1);
                 }
+
+                let next_record_delim_idx = if line_buf[field_delim_idx] == record_delim {
+                    record_delim_idx
+                } else {
+                    line_buf[field_delim_idx..].iter().position(|&x| x == record_delim).map(|x| x + field_delim_idx)
+                };
+
+                let what = &line_buf[field_start_idx..(field_start_idx + field_delim_idx)];
+
+                // line buf
+                assert!(next_record_delim_idx.is_none() || line_buf[next_record_delim_idx.unwrap()] == record_delim);
+
+                let ordering = cmp(what, target);
+
+                // println!("what={:?}, {:?}, target={:?} start_pos={}", String::from_utf8_lossy(what), ordering, String::from_utf8_lossy(target), start_pos);
+
+                // We found the record. Yay!
+                match (ordering, record_delim_idx) {
+                    (Ordering::Equal, Some(record_delim_idx)) => {
+                        // We can't break here because there may be multiple records.
+                        // Instead we have to find the position of the record that is
+                        // *just* smaller than target
+                        let proposed_end = mid + record_delim_idx + 1;
+
+                        // only update first_found_line_idx if it's None or if the
+                        // field_delim_idx is smaller
+                        first_found_line_idx = first_found_line_idx.map(|x : usize| x.min(mid + field_start_idx)).or(Some(mid + field_start_idx));
+                        // print!("ORDERING FOUND: ** first_found_line_idx={} mid={} field_start_idx={}\n", first_found_line_idx.unwrap(), mid, field_start_idx);
+
+                        if proposed_end >= end_pos {
+                            end_pos = mid;
+                        } else {
+                            end_pos = proposed_end;
+                        }
+                    }
+                    (Ordering::Equal, None) => {
+                        assert!(false, "Not sure how to deal with this yet.");
+                    }
+                    (Ordering::Less, _) => {
+                        start_pos = mid;
+                        if let Some(next_record_delim_idx) = next_record_delim_idx {
+                            // Note, in some cases this will cause the whole loop to end. But
+                            // we may not have checked whether the line starting with start_pos
+                            // also has the target value. So at the end we may need to double
+                            // check
+                            start_pos = mid + next_record_delim_idx + 1;
+                            // print!("ORDERING LESS: mid:{} next_record_delim_idx:{} new start_pos:{}\n", mid, next_record_delim_idx, start_pos);
+                            known_start_of_line_positions.insert(start_pos);
+                        }
+                    }
+                    (Ordering::Greater, _) => {
+                        end_pos = mid;
+                    }
+                }
+
+                break;
+            } else {
+                line_size *= 2;
+                continue;
             }
         }
         if last_try {
