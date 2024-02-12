@@ -257,10 +257,12 @@ pub fn binary_search_file(
         }
     }
 
+    // println!("first_found_line_idx={:?} start_pos={} end_pos={}", first_found_line_idx, start_pos, end_pos);
+
     // Start reading from start_pos to see whether the target is at start_pos
     if first_found_line_idx.is_none() || start_pos < first_found_line_idx.unwrap() {
         let intended_read_size = target.len() + 1;
-        if start_pos + intended_read_size < file_size {
+        if start_pos + intended_read_size <= file_size {
             f.seek(SeekFrom::Start(start_pos as u64))?;
             let mut line_buf = vec![0u8; intended_read_size];
             f.read(&mut line_buf)?;
