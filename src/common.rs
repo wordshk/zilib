@@ -259,25 +259,19 @@ pub fn binary_search_file(
         }
     }
 
-    match first_found_line_idx {
-        Some(first_found_line_idx) => {
-            // Start reading from start_pos to see whether the target is at start_pos
-            if start_pos < first_found_line_idx {
-                let intended_read_size = target.len() + 1;
-                if start_pos + intended_read_size < file_size {
-                    f.seek(SeekFrom::Start(start_pos as u64))?;
-                    let mut line_buf = vec![0u8; intended_read_size];
-                    f.read(&mut line_buf)?;
-                    if line_buf.starts_with(target) && line_buf[target.len()] == field_delim || line_buf[target.len()] == record_delim {
-                        return Ok(Some(start_pos));
-                    }
-                }
+    // Start reading from start_pos to see whether the target is at start_pos
+    if first_found_line_idx.is_none() || start_pos < first_found_line_idx.unwrap() {
+        let intended_read_size = target.len() + 1;
+        if start_pos + intended_read_size < file_size {
+            f.seek(SeekFrom::Start(start_pos as u64))?;
+            let mut line_buf = vec![0u8; intended_read_size];
+            f.read(&mut line_buf)?;
+            if line_buf.starts_with(target) && line_buf[target.len()] == field_delim || line_buf[target.len()] == record_delim {
+                return Ok(Some(start_pos));
             }
-            Ok(Some(first_found_line_idx))
-        },
-        None => {
-            Ok(None)
         }
     }
+
+    Ok(first_found_line_idx)
 }
 

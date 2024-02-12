@@ -5,6 +5,7 @@ use std::io::{self, Seek, SeekFrom, Read};
 
 fn records_from_sorted_file(path: &str, target: &str, field_delim: u8) -> io::Result<Vec<String>> {
     let pos = common::binary_search_file(path, target.as_bytes(), b'\n', field_delim, 0, None, 1)?;
+    // println!("pos: {:?}", pos);
 
     if pos.is_none() {
         return Ok(vec![]);
