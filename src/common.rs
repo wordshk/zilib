@@ -111,6 +111,7 @@ pub fn binary_search_file(
     start_pos: usize,
     end_pos: Option<usize>,
     mut line_size: usize,
+    cmp: fn(&[u8], &[u8]) -> std::cmp::Ordering,
 ) -> io::Result<Option<usize>> {
     let mut f = File::open(path)?;
     let mut bug_detector = 0;
@@ -203,7 +204,7 @@ pub fn binary_search_file(
                     // line buf
                     assert!(next_record_delim_idx.is_none() || line_buf[next_record_delim_idx.unwrap()] == record_delim);
 
-                    let ordering = what.cmp(target);
+                    let ordering = cmp(what, target);
 
                     // println!("what={:?}, {:?}, target={:?} start_pos={}", String::from_utf8_lossy(what), ordering, String::from_utf8_lossy(target), start_pos);
 

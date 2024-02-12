@@ -3,8 +3,8 @@ use zilib::common;
 use std::fs::File;
 use std::io::{self, Seek, SeekFrom, Read};
 
-fn records_from_sorted_file(path: &str, target: &str, field_delim: u8) -> io::Result<Vec<String>> {
-    let pos = common::binary_search_file(path, target.as_bytes(), b'\n', field_delim, 0, None, 1)?;
+fn records_from_sorted_file(path: &str, target: &str, field_delim: u8, cmp: fn(&[u8], &[u8]) -> std::cmp::Ordering) -> io::Result<Vec<String>> {
+    let pos = common::binary_search_file(path, target.as_bytes(), b'\n', field_delim, 0, None, 1, cmp)?;
     // println!("pos: {:?}", pos);
 
     if pos.is_none() {
@@ -49,8 +49,19 @@ fn main() -> io::Result<()> {
     } else {
         b','
     };
+    let which_cmp = if args.len() > 4 {
+        args[4].as_str()
+    } else {
+        "lex"
+    };
+    let cmp = match which_cmp {
+        "length" => |a: &[u8], b: &[u8]| { if a.len() == b.len() { a.cmp(b) } else { a.len().cmp(&b.len()) } },
+        "lex" => |a: &[u8], b: &[u8]| { a.cmp(b) },
+        _ => panic!("Invalid comparison function")
+    };
 
-    let records = records_from_sorted_file(path, target, field_delim)?;
+    // Compare lengths first, if length is equal, compare lexicographically
+    let records = records_from_sorted_file(path, target, field_delim, cmp)?;
     for record in records {
         print!("{}", record);
     }
