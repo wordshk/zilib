@@ -27,3 +27,9 @@ clean:
 
 release:
 	cargo build --release
+
+test:
+	cd ad_hoc_tests/ && make test
+
+expensive_tests:
+	cd ad_hoc_tests/ && make expensive_tests
