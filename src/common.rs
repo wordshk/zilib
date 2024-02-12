@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use unicode_categories::UnicodeCategories;
 
 /// Returns the number of characters that are in the "Letter" category in unicode"""
@@ -96,5 +97,187 @@ fn _guess_language(s: &str) -> LanguageGroup {
 /// Returns a constant representing the language group the text is in. Might be inaccurate.
 pub fn guess_language(s: &str) -> String {
     _guess_language(s).to_string()
+}
+
+use std::fs::File;
+use std::io::{self, Seek, SeekFrom, Read};
+use std::cmp::Ordering;
+
+pub fn binary_search_file(
+    path: &str,
+    target: &[u8],
+    record_delim: u8,
+    field_delim: u8,
+    start_pos: usize,
+    end_pos: Option<usize>,
+    mut line_size: usize,
+) -> io::Result<Option<usize>> {
+    let mut f = File::open(path)?;
+    let mut bug_detector = 0;
+    let mut first_found_line_idx = None;
+
+    let file_size : usize = match end_pos {
+        Some(pos) => pos as usize,
+        None => f.seek(SeekFrom::End(0))? as usize,
+    };
+
+    const DEBUG_LIMIT : usize = 9999;
+
+    let mut start_pos = start_pos;
+    let mut end_pos = match end_pos {
+        Some(pos) => pos,
+        None => file_size as usize,
+    };
+
+    let mut known_start_of_line_positions: BTreeSet<usize> = BTreeSet::new();
+    known_start_of_line_positions.insert(0);
+
+    while start_pos < end_pos {
+        bug_detector += 1;
+        assert!(bug_detector < DEBUG_LIMIT);
+        let mid = (start_pos + end_pos) / 2;
+        // print!("{} - {} - {}\n", start_pos, mid, end_pos);
+
+        // Probably wrong terminal condition?
+        if mid == start_pos || mid == end_pos {
+            break;
+        }
+
+        let mut last_try = false;
+        let mut record_delim_idx : Option<usize> = None;
+
+        // TODO: rename all "line" into "record" for consistency.
+        f.seek(SeekFrom::Start(mid as u64))?;
+
+        // double the line size until we find a line with the record value
+        while !last_try {
+            // print!("start:{} mid:{} end:{} line_size:{}\n", start_pos, mid, end_pos, line_size);
+            bug_detector += 1;
+            assert!(bug_detector < DEBUG_LIMIT);
+
+            last_try = if mid + line_size > file_size {
+                line_size = file_size - mid;
+                true
+            } else {
+                false
+            };
+
+            let mut line_buf = vec![0u8; line_size];
+            // EOF should not be reached because we checked the size of the file above
+            f.read_exact(&mut line_buf)?;
+
+
+            // If this is not the start of a line, we need to find the start of the line
+            if !known_start_of_line_positions.contains(&mid) {
+                record_delim_idx = line_buf.iter().position(|&x| x == record_delim);
+                if record_delim_idx.is_none() {
+                    line_size *= 2;
+                    continue;
+                }
+            }
+
+            let field_start_idx = match record_delim_idx {
+                Some(idx) => idx + 1, // start after record_delimiter matching location
+                None => 0,  // mid is the start of the record
+            };
+
+            // if the record delimiter is found, we can only assume the field value is the whole
+            // record
+            let field_delim_idx = line_buf[field_start_idx..].iter().position(|&x| x == field_delim || x == record_delim);
+
+            match field_delim_idx {
+                Some(field_delim_idx) => {
+                    if let Some(record_delim_idx) = record_delim_idx {
+                        known_start_of_line_positions.insert(mid + record_delim_idx + 1);
+                    }
+
+                    let next_record_delim_idx = if line_buf[field_delim_idx] == record_delim {
+                        record_delim_idx
+                    } else {
+                        line_buf[field_delim_idx..].iter().position(|&x| x == record_delim).map(|x| x + field_delim_idx)
+                    };
+
+                    let what = &line_buf[field_start_idx..(field_start_idx + field_delim_idx)];
+
+                    // line buf
+                    assert!(next_record_delim_idx.is_none() || line_buf[next_record_delim_idx.unwrap()] == record_delim);
+
+                    let ordering = what.cmp(target);
+
+                    // println!("what={:?}, {:?}, target={:?}", String::from_utf8_lossy(what), ordering, String::from_utf8_lossy(target));
+
+                    // We found the record. Yay!
+                    match (ordering, record_delim_idx) {
+                        (Ordering::Equal, Some(record_delim_idx)) => {
+                            // We can't break here because there may be multiple records.
+                            // Instead we have to find the position of the record that is
+                            // *just* smaller than target
+                            let proposed_end = mid + record_delim_idx + 1;
+
+                            // only update first_found_line_idx if it's None or if the
+                            // field_delim_idx is smaller
+                            first_found_line_idx = first_found_line_idx.map(|x : usize| x.min(mid + field_start_idx)).or(Some(mid + field_start_idx));
+                            // print!("ORDERING FOUND: ** first_found_line_idx={} mid={} field_start_idx={}\n", first_found_line_idx.unwrap(), mid, field_start_idx);
+
+                            if proposed_end >= end_pos {
+                                end_pos = mid;
+                            } else {
+                                end_pos = proposed_end;
+                            }
+                        }
+                        (Ordering::Less, Some(_)) => {
+                            start_pos = mid;
+                            if let Some(next_record_delim_idx) = next_record_delim_idx {
+                                // Note, in some cases this will cause the whole loop to end. But
+                                // we may not have checked whether the line starting with start_pos
+                                // also has the target value. So at the end we may need to double
+                                // check
+                                start_pos = mid + next_record_delim_idx + 1;
+                                // print!("ORDERING LESS: mid:{} next_record_delim_idx:{} new start_pos:{}\n", mid, next_record_delim_idx, start_pos);
+                                known_start_of_line_positions.insert(start_pos);
+                            }
+                        }
+                        (Ordering::Greater, _) => {
+                            end_pos = mid;
+                        }
+                        _ => {
+                            // This should never happen
+                            assert!(false);
+                        }
+                    }
+
+                    break;
+                },
+                None => {
+                    line_size *= 2;
+                    continue;
+                }
+            }
+        }
+        if last_try {
+            break;
+        }
+    }
+
+    match first_found_line_idx {
+        Some(first_found_line_idx) => {
+            // Start reading from start_pos to see whether the target is at start_pos
+            if start_pos < first_found_line_idx {
+                let intended_read_size = target.len() + 1;
+                if start_pos + intended_read_size < file_size {
+                    f.seek(SeekFrom::Start(start_pos as u64))?;
+                    let mut line_buf = vec![0u8; intended_read_size];
+                    f.read(&mut line_buf)?;
+                    if line_buf.starts_with(target) && line_buf[target.len()] == field_delim || line_buf[target.len()] == record_delim {
+                        return Ok(Some(start_pos));
+                    }
+                }
+            }
+            Ok(Some(first_found_line_idx))
+        },
+        None => {
+            Ok(None)
+        }
+    }
 }
 
