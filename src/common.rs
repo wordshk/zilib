@@ -1,4 +1,3 @@
-use std::collections::BTreeSet;
 use unicode_categories::UnicodeCategories;
 
 /// Returns the number of characters that are in the "Letter" category in unicode"""
@@ -130,22 +129,14 @@ pub fn binary_search_file(
         None => file_size as usize,
     };
 
-    let mut known_start_of_line_positions: BTreeSet<usize> = BTreeSet::new();
-    known_start_of_line_positions.insert(0);
-
     while start_pos < end_pos {
         bug_detector += 1;
         assert!(bug_detector < DEBUG_LIMIT);
         let mid = (start_pos + end_pos) / 2;
         // print!("{} - {} - {}\n", start_pos, mid, end_pos);
 
-        // Probably wrong terminal condition?
-        if mid == start_pos || mid == end_pos {
-            break;
-        }
 
         let mut last_try = false;
-        let mut record_delim_idx : Option<usize> = None;
 
         // TODO: rename all "line" into "record" for consistency.
 
@@ -168,48 +159,30 @@ pub fn binary_search_file(
             f.read_exact(&mut line_buf)?;
 
 
-            // If this is not the start of a line, we need to find the start of the line
-            if !known_start_of_line_positions.contains(&mid) {
-                record_delim_idx = line_buf.iter().position(|&x| x == record_delim);
-                if record_delim_idx.is_none() {
-                    line_size *= 2;
-                    continue;
-                }
+            // Find the start of the line
+            let record_delim_idx = line_buf.iter().position(|&x| x == record_delim);
+            if record_delim_idx.is_none() {
+                line_size *= 2;
+                continue;
             }
-
-            let field_start_idx = match record_delim_idx {
-                Some(idx) => idx + 1, // start after record_delimiter matching location
-                None => 0,  // mid is the start of the record
-            };
+            let record_delim_idx = record_delim_idx.unwrap();
+            let field_start_idx = record_delim_idx + 1;
 
             // if the record delimiter is found, we can only assume the field value is the whole
             // record
             let field_delim_idx = line_buf[field_start_idx..].iter().position(|&x| x == field_delim || x == record_delim);
 
             if let Some(field_delim_idx) = field_delim_idx {
-                if let Some(record_delim_idx) = record_delim_idx {
-                    // println!("inserting record_delim_idx: {}", mid + record_delim_idx + 1);
-                    known_start_of_line_positions.insert(mid + record_delim_idx + 1);
-                }
-
-                let next_record_delim_idx = if line_buf[field_delim_idx] == record_delim {
-                    record_delim_idx
-                } else {
-                    line_buf[field_delim_idx..].iter().position(|&x| x == record_delim).map(|x| x + field_delim_idx)
-                };
 
                 let what = &line_buf[field_start_idx..(field_start_idx + field_delim_idx)];
-
-                // line buf
-                assert!(next_record_delim_idx.is_none() || line_buf[next_record_delim_idx.unwrap()] == record_delim);
 
                 let ordering = cmp(what, target);
 
                 // println!("what={:?}, {:?}, target={:?} start_pos={}", String::from_utf8_lossy(what), ordering, String::from_utf8_lossy(target), start_pos);
 
                 // We found the record. Yay!
-                match (ordering, record_delim_idx) {
-                    (Ordering::Equal, Some(record_delim_idx)) => {
+                match ordering {
+                    Ordering::Equal => {
                         // We can't break here because there may be multiple records.
                         // Instead we have to find the position of the record that is
                         // *just* smaller than target
@@ -226,22 +199,16 @@ pub fn binary_search_file(
                             end_pos = proposed_end;
                         }
                     }
-                    (Ordering::Equal, None) => {
-                        assert!(false, "Not sure how to deal with this yet.");
+                    Ordering::Less => {
+                        // Note, in some cases this will cause the whole loop to end. But
+                        // we may not have checked whether the line starting with start_pos
+                        // also has the target value. So at the end we may need to double
+                        // check
+                        start_pos = mid + record_delim_idx + 1;
+                        // println!("ORDERING LESS: mid:{} record_delim_idx:{:?}", mid, record_delim_idx);
+                        // print!("ORDERING LESS: mid:{} next_record_delim_idx:{} new start_pos:{}\n", mid, next_record_delim_idx, start_pos);
                     }
-                    (Ordering::Less, _) => {
-                        start_pos = mid;
-                        if let Some(next_record_delim_idx) = next_record_delim_idx {
-                            // Note, in some cases this will cause the whole loop to end. But
-                            // we may not have checked whether the line starting with start_pos
-                            // also has the target value. So at the end we may need to double
-                            // check
-                            start_pos = mid + next_record_delim_idx + 1;
-                            // print!("ORDERING LESS: mid:{} next_record_delim_idx:{} new start_pos:{}\n", mid, next_record_delim_idx, start_pos);
-                            known_start_of_line_positions.insert(start_pos);
-                        }
-                    }
-                    (Ordering::Greater, _) => {
+                    Ordering::Greater => {
                         end_pos = mid;
                         last_try = false; // We move the end position forward, so we reset this.
                     }
@@ -264,6 +231,7 @@ pub fn binary_search_file(
     if first_found_line_idx.is_none() || start_pos < first_found_line_idx.unwrap() {
         let intended_read_size = target.len() + 1;
         if start_pos + intended_read_size <= file_size {
+            // Maybe we should seek to start_pos-1 to ensure it starts from a newline
             f.seek(SeekFrom::Start(start_pos as u64))?;
             let mut line_buf = vec![0u8; intended_read_size];
             f.read(&mut line_buf)?;
