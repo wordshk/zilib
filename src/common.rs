@@ -147,7 +147,6 @@ pub fn binary_search_file(
         let mut record_delim_idx : Option<usize> = None;
 
         // TODO: rename all "line" into "record" for consistency.
-        f.seek(SeekFrom::Start(mid as u64))?;
 
         // double the line size until we find a line with the record value
         while !last_try {
@@ -163,6 +162,7 @@ pub fn binary_search_file(
             };
 
             let mut line_buf = vec![0u8; line_size];
+            f.seek(SeekFrom::Start(mid as u64))?;
             // EOF should not be reached because we checked the size of the file above
             f.read_exact(&mut line_buf)?;
 
