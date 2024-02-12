@@ -188,6 +188,7 @@ pub fn binary_search_file(
             match field_delim_idx {
                 Some(field_delim_idx) => {
                     if let Some(record_delim_idx) = record_delim_idx {
+                        // println!("inserting record_delim_idx: {}", mid + record_delim_idx + 1);
                         known_start_of_line_positions.insert(mid + record_delim_idx + 1);
                     }
 
@@ -204,7 +205,7 @@ pub fn binary_search_file(
 
                     let ordering = what.cmp(target);
 
-                    // println!("what={:?}, {:?}, target={:?}", String::from_utf8_lossy(what), ordering, String::from_utf8_lossy(target));
+                    // println!("what={:?}, {:?}, target={:?} start_pos={}", String::from_utf8_lossy(what), ordering, String::from_utf8_lossy(target), start_pos);
 
                     // We found the record. Yay!
                     match (ordering, record_delim_idx) {
@@ -225,7 +226,10 @@ pub fn binary_search_file(
                                 end_pos = proposed_end;
                             }
                         }
-                        (Ordering::Less, Some(_)) => {
+                        (Ordering::Equal, None) => {
+                            assert!(false, "Not sure how to deal with this yet.");
+                        }
+                        (Ordering::Less, _) => {
                             start_pos = mid;
                             if let Some(next_record_delim_idx) = next_record_delim_idx {
                                 // Note, in some cases this will cause the whole loop to end. But
@@ -239,10 +243,6 @@ pub fn binary_search_file(
                         }
                         (Ordering::Greater, _) => {
                             end_pos = mid;
-                        }
-                        _ => {
-                            // This should never happen
-                            assert!(false);
                         }
                     }
 
