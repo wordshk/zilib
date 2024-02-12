@@ -180,6 +180,7 @@ pub fn binary_search_file(
 
                 // println!("what={:?}, {:?}, target={:?} start_pos={}", String::from_utf8_lossy(what), ordering, String::from_utf8_lossy(target), start_pos);
 
+                last_try = false; // We move the start/end positions, so we're not in the last try anymore
                 // We found the record. Yay!
                 match ordering {
                     Ordering::Equal => {
@@ -206,11 +207,10 @@ pub fn binary_search_file(
                         // check
                         start_pos = mid + record_delim_idx + 1;
                         // println!("ORDERING LESS: mid:{} record_delim_idx:{:?}", mid, record_delim_idx);
-                        // print!("ORDERING LESS: mid:{} next_record_delim_idx:{} new start_pos:{}\n", mid, next_record_delim_idx, start_pos);
+                        // print!("ORDERING LESS: mid:{} next_record_delim_idx:{} new start_pos:{}\n", mid, record_delim_idx, start_pos);
                     }
                     Ordering::Greater => {
                         end_pos = mid;
-                        last_try = false; // We move the end position forward, so we reset this.
                     }
                 }
 
@@ -221,7 +221,8 @@ pub fn binary_search_file(
             }
         }
         if last_try {
-            break;
+            end_pos = mid;
+            // println!("LAST TRY: setting end_pos=mid={}", end_pos);
         }
     }
 
