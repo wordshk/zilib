@@ -243,6 +243,7 @@ pub fn binary_search_file(
                     }
                     (Ordering::Greater, _) => {
                         end_pos = mid;
+                        last_try = false; // We move the end position forward, so we reset this.
                     }
                 }
 
@@ -266,7 +267,7 @@ pub fn binary_search_file(
             f.seek(SeekFrom::Start(start_pos as u64))?;
             let mut line_buf = vec![0u8; intended_read_size];
             f.read(&mut line_buf)?;
-            if line_buf.starts_with(target) && line_buf[target.len()] == field_delim || line_buf[target.len()] == record_delim {
+            if line_buf.starts_with(target) && (line_buf[target.len()] == field_delim || line_buf[target.len()] == record_delim) {
                 return Ok(Some(start_pos));
             }
         }
