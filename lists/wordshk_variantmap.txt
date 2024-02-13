@@ -1,0 +1,150 @@
+# Additional map of non-standard -> more-standard HK characters.
+# This may need to be reported back to upstream (OpenCC).
+# This list is manually edited by editors of words.hk
+嫺	嫻
+檐	簷
+痹	痺
+繮	韁
+鮎	鯰
+齶	顎
+尐	啲
+滙	匯
+銹	鏽
+艷	豔
+𨳒	屌
+鎅	𠝹
+睼	睇
+
+### Controversial ###
+# XXX: 迴響全用 畀. bad taste IMHO :o)
+畀	俾
+唶	啫
+㩒	撳
+# Force with !!
+羣	群#!!
+呯	砰
+屄	閪
+𡁵	緊
+𥹉	𣲷
+癐	攰
+櫈	凳
+唻	嚟
+㬹	踭
+唨	咗
+𢯊	扚
+㨢	掕
+# 揼 seems to see at least an order of magnitude more usage than 抌 in an excerpt of lihkg corpus, even though the former has more meanings
+抌	揼
+糭	粽
+# lossy
+裇	恤
+𨳊	鳩
+㞗	鳩
+𨳍	柒
+䁽	𥅈
+# lossy. many people in lihkg use 炆 for 忟
+燜	炆
+𠴱	嗰
+囖	囉
+# some will classify this as simp=>trad
+够	夠
+烟	煙
+碇	埞
+鬈	攣
+### End controversial ###
+
+# Need check
+煇	輝
+癡	痴#!!
+讎	仇
+綫	線
+痾	屙
+証	證
+歛	斂
+爲	為#!!
+奬	獎
+肶	髀
+叙	敍
+迹	跡
+紥	紮
+嚹	喇
+炖	燉
+彊	強
+僆	𡃁
+砦	寨
+# lossy
+喐	郁
+鷄	雞
+齌	齋
+籐	藤
+葯	藥
+咏	詠
+# Two entries in KangXi. One is 分勿切...
+巿	市
+啟	啓#!!
+駡	罵
+㨂	揀
+錬	鍊
+𣁽	魁
+妺	妹
+叠	疊
+綉	繡
+# lossy
+𨶙	撚
+楝	棟
+# edb has the wrong codepoint. The graphic seems fine though.
+媼	媪#!!
+踪	蹤
+嵗	歲
+䓤	葱
+釆	采
+沬	沫
+㝫	窿
+韮	韭
+衊	蔑
+靭	韌
+滷	鹵
+
+
+# Pretty much correcting a wrong (typo) word
+踨	蹤
+皃	兒
+减	減
+関	關
+参	參
+軑	軚
+隷	隸
+鍚	錫
+昩	昧
+䅲	稽
+燿	耀
+撘	搭
+埸	場
+癈	廢
+唒	哂
+踼	踢
+褔	福
+劵	券
+厠	廁
+抺	抹
+祼	裸
+袓	祖
+暪	瞞
+鸁	贏
+昅	𥄫
+涷	凍
+䄂	袖
+蠃	贏
+襌	禪
+犠	犧
+# 𥚃 => 裡 => 裏
+𥚃	裏
+眀	明
+袐	祕
+趌	趷
+
+# Uncommon
+㗳	嗒
+𣎴	不
+嗮	晒
+曈	瞳

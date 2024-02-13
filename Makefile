@@ -7,7 +7,7 @@ lint:
 target/debug/%: lists/wordslist.csv
 	cargo build --bins --no-default-features
 
-zigen_data: lists/Unihan.zip lists/CJKRadicals.txt lists/english_variants.json lists/wordshk_charset.json
+zigen_data: lists/Unihan.zip lists/CJKRadicals.txt lists/english_variants.json lists/wordshk_charset.json lists/wordshk_variantmap.json
 
 lists/wordslist.csv:
 	cd lists && curl -O https://words.hk/faiman/analysis/wordslist.csv

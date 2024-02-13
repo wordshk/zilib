@@ -10,8 +10,8 @@ use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write, Seek};
-use zilib::common;
 use zilib::cjk;
+use zilib::common;
 
 /*
 # More details about file format of varcon can be found in:
@@ -271,11 +271,191 @@ fn usage() {
     println!("  generate_english_variants <output_filename> - Generate a map of English variants from the varcon file");
 }
 
+
+// Recursive helper function
+fn recur(w: &HashMap<char, char>, k: char, st: &mut Vec<char>, charset: &HashSet<char>) -> Option<char> {
+    if st.contains(&k) {
+        return None;
+    }
+    st.push(k);
+    if let Some(next_k) = w.get(&k) {
+        if w.contains_key(next_k) {
+            recur(w, *next_k, st, charset)
+        } else {
+            Some(next_k.clone())
+        }
+    } else {
+        Some(k)
+    }
+}
+
+// Main function to deloop the map
+fn deloop(rawmap: HashMap<char, char>, charset: HashSet<char>) -> HashMap<char, char> {
+    let mut deloopedmap: HashMap<char, char> = HashMap::new();
+
+    for (fr, _) in rawmap.iter() {
+        let mut looped = Vec::new();
+        if let Some(res) = recur(&rawmap, *fr, &mut looped, &charset) {
+            deloopedmap.insert(fr.clone(), res);
+        } else {
+            let canonical: Vec<char> = looped.iter().filter(|x| charset.contains(*x)).cloned().collect();
+            if canonical.len() == 1 {
+                for x in looped.iter() {
+                    if x != &canonical[0] {
+                        deloopedmap.insert(x.clone(), canonical[0].clone());
+                    }
+                }
+            }
+        }
+    }
+
+    deloopedmap
+}
+
+// 'a is the lifetime of the resulting iterator
+fn line_generator(path: &str, splitter: char) -> impl Iterator<Item = io::Result<Vec<String>>> {
+    let file = File::open(path).expect(format!("File not found {}", path).as_str());
+    let reader = io::BufReader::new(file).lines();
+
+    reader.filter_map(move |line| {
+        let line = line.ok()?;
+        let line = line.trim().to_string();
+        if line.is_empty() || line.starts_with('#') {
+            return None;
+        }
+
+        // get the first char from every splitted segment
+        let results: Vec<String> = line.split(splitter).map(|s| s.trim().to_string()).collect();
+        assert!(results.len() > 1, "Error: line {} has less than 2 segments", line);
+        Some(Ok(results))
+    })
+}
+
+fn wordshk_variant_map() -> Result<HashMap<char, char>, Box<dyn std::error::Error>> {
+    let mut rawmap: HashMap<char, char> = HashMap::new();
+    let charset = wordshk_character_set();
+
+    let tw_path = "lists/TWVariants.txt";
+    let hk_path = "lists/HKVariants.txt";
+    let hf_path = "lists/hfhchan-kVariants.txt";
+    let wordshk_path = "lists/wordshk_variantmap.txt";
+
+    // TWVariants.txt processing
+    for splits in line_generator(&tw_path, '\t') {
+        let splits = splits?;
+        let to = splits[0].chars().next().unwrap();
+        let fr = splits[1].chars().next().unwrap();
+        rawmap.insert(fr, to);
+    }
+
+    // HKVariants.txt processing
+    for splits in line_generator(&hk_path, '\t') {
+        let splits = splits?;
+        let fr = splits[0].chars().next().unwrap();
+        let to = splits[1].chars().next().unwrap();
+        // Original comment from python code: Sometimes there are multiple values here, and we just
+        // need to take the first.
+        rawmap.insert(fr, to);
+    }
+
+    // hfhchan-kVariants.txt processing
+    for splits in line_generator(&hf_path, '\t') {
+        let splits = splits?;
+        let fr = &splits[0];
+        let annotate = &splits[1];
+        let to = &splits[2];
+
+        if !annotate.contains("simp") {
+            let fr0 = fr.chars().next().unwrap();
+            let to0 = to.chars().next().unwrap();
+            if charset.contains(&to0) && !charset.contains(&fr0) {
+                rawmap.insert(fr0, to0);
+            }
+            if charset.contains(&fr0) && !charset.contains(&to0) {
+                rawmap.insert(to0, fr0);
+            }
+        }
+    }
+
+    // wordshk_variantmap.txt processing
+    let mut overridemap: HashMap<char, char> = HashMap::new();
+    for splits in line_generator(&wordshk_path, '\t') {
+        let splits = splits?;
+        let fr = &splits[0];
+        let to = &splits[1];
+        let fr0 = fr.chars().next().unwrap();
+        let to0 = to.chars().next().unwrap();
+        if to.contains("#!!") {
+            overridemap.insert(fr0, to0);
+        } else {
+            if let Some(existing) = rawmap.get(&fr0) {
+                if *existing == to0 {
+                    println!("Warning: {} => {} already defined", fr, to);
+                } else {
+                    println!("Warning: {} => {} specified but already have {} => {}", fr, to, fr, existing);
+                }
+            }
+        }
+        rawmap.insert(fr0, to0);
+    }
+
+    // Deloop the map
+
+    // Override with custom map
+    let mut deloopedmap = deloop(rawmap, charset.clone());
+    for (fr, to) in overridemap {
+        deloopedmap.insert(fr, to);
+    }
+
+    // Check the results
+    let additional_charset: HashSet<char> = "捝敚棁榅涚煴緼腽蒀輼鰛".chars().collect();
+    let invalids: Vec<&char> = deloopedmap.values().filter(|&c| !charset.contains(c) && !additional_charset.contains(&c)).collect();
+    if !invalids.is_empty() {
+        let invalid_chars: String = invalids.iter().map(|c| c.to_string()).collect::<Vec<String>>().join(", ");
+        return Err(format!("Found characters '{}' which are not in HK standard charset!", invalid_chars).into());
+    }
+
+    Ok(deloopedmap)
+}
+
+fn generate_wordshk_variantmap(out_filename : &str) -> io::Result<()> {
+    let map = wordshk_variant_map().expect("Error generating wordshk variant map");
+    let unihan_data = cjk::unihan_data(); // this can be a slow operation
+    let mut out_file = File::create(out_filename)?;
+    writeln!(out_file, "{{")?;
+    write!(out_file, " ")?;
+
+    let mut count = 0;
+    let total = map.len();
+    let mut last_radical_label : Option<&str> = None;
+    for (k, v) in sorted_by(map.iter(), |a, b| cjk::radical_char_cmp(a.1, b.1)).iter() {
+        count += 1;
+        write!(out_file, r#""{}":"{}""#, k, v)?;
+        if count < total {
+            write!(out_file, ",")?;
+        }
+
+        // if radical changes, print a newline
+        let (this_radical_label, _) = unihan_data.get(v).map(|uh| uh.get_radical_strokes()).unwrap_or((None, None));
+        if this_radical_label != last_radical_label {
+            write!(out_file, "\n")?;
+            write!(out_file, " ")?;
+            last_radical_label = this_radical_label;
+        }
+
+    }
+    writeln!(out_file, "")?;
+    writeln!(out_file, "}}")?;
+
+    Ok(())
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     match (args.get(1).map(String::as_str), args.get(2)) {
         (Some("generate_english_variants"), Some(out_filename) ) => generate_english_variants(out_filename),
         (Some("generate_wordshk_charset"), Some(out_filename)) => generate_wordshk_charset(out_filename),
+        (Some("generate_wordshk_variantmap"), Some(out_filename)) => generate_wordshk_variantmap(out_filename),
         _ => {
             usage();
             Err(io::Error::new(io::ErrorKind::InvalidInput, "Invalid usage"))
