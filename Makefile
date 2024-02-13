@@ -1,10 +1,10 @@
 all: zigen_data rust_all
-rust_all: zigen_data
+rust_all: zigen_data lists/wordslist.csv
 	cargo build
 lint:
 	cargo clippy
 
-target/debug/%: src/*.rs src/bin/*.rs
+target/debug/%: src/*.rs src/bin/*.rs wordslist.csv
 	cargo build --bins --no-default-features
 
 zigen_data: lists/Unihan.zip lists/CJKRadicals.txt lists/english_variants.json lists/wordshk_charset.json lists/wordshk_variantmap.json lists/wordshk_autoconvert.json
@@ -16,7 +16,7 @@ lists/Unihan.zip:
 lists/CJKRadicals.txt:
 	cd lists && curl -O https://www.unicode.org/Public/UCD/latest/ucd/CJKRadicals.txt
 
-lists/%.json: lists/varcon.txt.bz2 target/debug/zigen
+lists/%.json: target/debug/zigen
 	# Funny enough make's basename doesn't strip away the directory...
 	./target/debug/zigen generate_$(shell basename $@ .json) $@
 
