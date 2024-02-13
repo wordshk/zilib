@@ -418,6 +418,18 @@ fn wordshk_variant_map() -> Result<HashMap<char, char>, Box<dyn std::error::Erro
     Ok(deloopedmap)
 }
 
+// Custom comparator for sorting the map: first by "to" character, then by "from" character
+fn radical_char_cmp_for_map_item(a: &(&char, &char), b: &(&char, &char)) -> Ordering {
+    let (a_from, a_to) = a;
+    let (b_from, b_to) = b;
+
+    if a_to == b_to {
+        cjk::radical_char_cmp(&a_from, &b_from)
+    } else {
+        cjk::radical_char_cmp(&a_to, &b_to)
+    }
+}
+
 fn generate_wordshk_variantmap(out_filename : &str) -> io::Result<()> {
     let map = wordshk_variant_map().expect("Error generating wordshk variant map");
     let unihan_data = cjk::unihan_data(); // this can be a slow operation
@@ -427,7 +439,7 @@ fn generate_wordshk_variantmap(out_filename : &str) -> io::Result<()> {
     let mut count = 0;
     let total = map.len();
     let mut last_radical_label : Option<&str> = None;
-    for (k, v) in sorted_by(map.iter(), |a, b| cjk::radical_char_cmp(a.1, b.1)).iter() {
+    for (k, v) in sorted_by(map.iter(), radical_char_cmp_for_map_item).iter() {
         // if radical changes, print a newline
         let (this_radical_label, _) = unihan_data.get(v).map(|uh| uh.get_radical_strokes()).unwrap_or((None, None));
         if this_radical_label != last_radical_label {
@@ -441,8 +453,8 @@ fn generate_wordshk_variantmap(out_filename : &str) -> io::Result<()> {
             write!(out_file, ",")?;
         }
     }
-    writeln!(out_file, "")?;
-    writeln!(out_file, "}}")?;
+    write!(out_file, "\n")?;
+    write!(out_file, "}}\n")?;
 
     Ok(())
 }
@@ -479,8 +491,8 @@ fn generate_wordshk_autoconvert(out_filename : &str) -> io::Result<()> {
         }
 
     }
-    writeln!(out_file, "")?;
-    writeln!(out_file, "}}")?;
+    write!(out_file, "\n")?;
+    write!(out_file, "}}\n")?;
 
     Ok(())
 }

@@ -4,7 +4,7 @@ rust_all: zigen_data
 lint:
 	cargo clippy
 
-target/debug/%: lists/wordslist.csv
+target/debug/%: src/*.rs src/bin/*.rs
 	cargo build --bins --no-default-features
 
 zigen_data: lists/Unihan.zip lists/CJKRadicals.txt lists/english_variants.json lists/wordshk_charset.json lists/wordshk_variantmap.json lists/wordshk_autoconvert.json
