@@ -422,25 +422,60 @@ fn generate_wordshk_variantmap(out_filename : &str) -> io::Result<()> {
     let map = wordshk_variant_map().expect("Error generating wordshk variant map");
     let unihan_data = cjk::unihan_data(); // this can be a slow operation
     let mut out_file = File::create(out_filename)?;
-    writeln!(out_file, "{{")?;
-    write!(out_file, " ")?;
+    write!(out_file, "{{")?;
 
     let mut count = 0;
     let total = map.len();
     let mut last_radical_label : Option<&str> = None;
     for (k, v) in sorted_by(map.iter(), |a, b| cjk::radical_char_cmp(a.1, b.1)).iter() {
-        count += 1;
-        write!(out_file, r#""{}":"{}""#, k, v)?;
-        if count < total {
-            write!(out_file, ",")?;
-        }
-
         // if radical changes, print a newline
         let (this_radical_label, _) = unihan_data.get(v).map(|uh| uh.get_radical_strokes()).unwrap_or((None, None));
         if this_radical_label != last_radical_label {
             write!(out_file, "\n")?;
             write!(out_file, " ")?;
             last_radical_label = this_radical_label;
+        }
+        count += 1;
+        write!(out_file, r#""{}":"{}""#, k, v)?;
+        if count < total {
+            write!(out_file, ",")?;
+        }
+    }
+    writeln!(out_file, "")?;
+    writeln!(out_file, "}}")?;
+
+    Ok(())
+}
+
+fn generate_wordshk_autoconvert(out_filename : &str) -> io::Result<()> {
+    let mut map = HashMap::new();
+    let safemap_path = "lists/wordshk_autoconvert.txt";
+    for splits in line_generator(safemap_path, '\t') {
+        let splits = splits.unwrap();
+        let fr = splits[0].chars().next().unwrap();
+        let to = splits[1].chars().next().unwrap();
+        map.insert(fr, to);
+    }
+    let unihan_data = cjk::unihan_data(); // this can be a slow operation
+    let mut out_file = File::create(out_filename)?;
+    write!(out_file, "{{")?;
+
+    let mut count = 0;
+    let total = map.len();
+    let mut last_radical_label : Option<&str> = None;
+    for (k, v) in sorted_by(map.iter(), |a, b| cjk::radical_char_cmp(a.1, b.1)).iter() {
+        // if radical changes, print a newline
+        let (this_radical_label, _) = unihan_data.get(v).map(|uh| uh.get_radical_strokes()).unwrap_or((None, None));
+        if this_radical_label != last_radical_label {
+            write!(out_file, "\n")?;
+            write!(out_file, " ")?;
+            last_radical_label = this_radical_label;
+        }
+
+        count += 1;
+        write!(out_file, r#""{}":"{}""#, k, v)?;
+        if count < total {
+            write!(out_file, ",")?;
         }
 
     }
@@ -456,6 +491,7 @@ fn main() -> io::Result<()> {
         (Some("generate_english_variants"), Some(out_filename) ) => generate_english_variants(out_filename),
         (Some("generate_wordshk_charset"), Some(out_filename)) => generate_wordshk_charset(out_filename),
         (Some("generate_wordshk_variantmap"), Some(out_filename)) => generate_wordshk_variantmap(out_filename),
+        (Some("generate_wordshk_autoconvert"), Some(out_filename)) => generate_wordshk_autoconvert(out_filename),
         _ => {
             usage();
             Err(io::Error::new(io::ErrorKind::InvalidInput, "Invalid usage"))

@@ -1,0 +1,99 @@
+# "Safe" (not-so-controversial) map of variants from non-HK to HK. We
+# automatically convert these values to the canonical form. We also automatically
+# display the variants when users view any entry with these characters.
+㨂	揀
+僞	偽
+兌	兑
+啟	啓
+奬	獎
+媼	媪
+嬀	媯
+悅	悦
+慍	愠
+挩	捝
+搵	揾
+敓	敚
+梲	棁
+榲	榅
+氳	氲
+涗	涚
+溫	温
+溼	濕
+滙	匯
+潙	溈
+潨	潀
+熅	煴
+爲	為
+稅	税
+縕	緼
+脫	脱
+膃	腽
+艷	豔
+葯	藥
+蒕	蒀
+蔥	葱
+蔿	蒍
+蘊	藴
+蛻	蜕
+衆	眾
+衛	衞
+說	説
+轀	輼
+醞	醖
+鉤	鈎
+銳	鋭
+銹	鏽
+錬	鍊
+閱	閲
+駡	罵
+鰮	鰛
+鷄	雞
+吿	告
+汙	污
+洩	泄
+床	牀
+羣	群
+裡	裏
+麵	麪
+册	冊
+删	刪
+栅	柵
+姗	姍
+叄	叁
+幷	并
+倂	併
+硏	研
+槪	概
+旣	既
+抛	拋
+没	沒
+戶	户
+匀	勻
+塡	填
+鎭	鎮
+眞	真
+悳	惪
+緖	緒
+曁	暨
+敎	教
+臥	卧
+敘	敍
+祕	秘
+
+#hfchan: 異形你只留一個完全無死，本身可以分開打就係 Unicode 嘅 on9 歷史； 異構一來一到人名 etc 就 g 硬 g
+#櫈	凳
+#刹	剎
+#鎅	𠝹
+#叄	叁  # which?
+#呑	吞  # 錯字?
+#嚹	喇
+
+#峰	峯
+#叠	疊
+#䁽	𥅈
+#糭	粽 ???
+#絶	絕
+#綫	線
+#証	證
+#肶	髀
+#㞗	鳩, "𨳊":"鳩"

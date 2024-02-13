@@ -90,6 +90,9 @@ SUCH DAMAGE.
 - wordshk_charlist.txt - list of canonical Hong Kong characters, maintained by words.hk
   - intended as a "patch" on edb_charlist.txt. Lines starting with '!' removes the entry from the edb list (if it exists there).
 
+- wordshk_autoconvert.txt - a limited list of characters that are automatically recognized as variants in words.hk
+  - We (in words.hk) use a smaller, customized list since we list these characters as variants in our (web) interface. We don't want to list a bunch of usually irrelevant rare variants. However, we also maintain the larger list for conversion into the recognized character set.
+
 - HKVariants.txt, TWVariants.txt - data from OpenCC.
   - Authors and contributors of OpenCC, and License text (from https://github.com/BYVoid/OpenCC/blob/master/LICENSE):
 
