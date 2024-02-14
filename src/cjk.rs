@@ -1,6 +1,8 @@
 use std::cmp;
 use std::collections::HashMap;
 use std::sync::OnceLock;
+use std::fs::File;
+use std::io::BufRead;
 
 // Compare two strings by their CJK radicals, then by their strokes
 // Note that there is a similar comparison function in
@@ -15,7 +17,7 @@ pub fn radical_char_cmp(a_c: &char, b_c: &char) -> cmp::Ordering {
         return cmp::Ordering::Equal;
     }
 
-    let unihan_data = unihan_data(); // this can be a slow operation
+    let unihan_data = unihan_data(None); // this can be a slow operation
     let a_rs = unihan_data.get(a_c).map(|uh| uh.get_radical_strokes()).unwrap_or((None, None));
     let b_rs = unihan_data.get(b_c).map(|uh| uh.get_radical_strokes()).unwrap_or((None, None));
 
@@ -272,12 +274,15 @@ pub fn radical_label_to_chars() -> &'static HashMap<String, (Option<char>, char)
     })
 }
 
-pub fn unihan_data() -> &'static HashMap<char, UnihanData> {
+pub fn unihan_data(initial_data_path : Option<&str>) -> &'static HashMap<char, UnihanData> {
     static UNIHAN_DATA : OnceLock<HashMap<char, UnihanData>> = OnceLock::new();
     UNIHAN_DATA.get_or_init(|| {
         let mut map = HashMap::new();
-        let data = include_str!("../lists/Unihan_IRGSources.txt");
-        for line in data.lines() {
+        let initial_data_path = initial_data_path.expect("initial_data_path not provided for first invokation to unihan_data");
+        // FIXME: we need to find out a better way to include the unihan database. For now, we just
+        // expect users of API to pass a path for the initialization and hope it works out.
+        let data = File::open(initial_data_path).expect(format!("Failed to open Unihan_IRGSources.txt from path {}", initial_data_path).as_str());
+        for line in std::io::BufReader::new(data).lines().map(|l| l.expect("Failed to read line")) {
             if line.starts_with("#") {
                 continue;
             }

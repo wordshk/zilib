@@ -77,7 +77,7 @@ SUCH DAMAGE.
   - TODO: change this to csv (makes it easier to track diff history) - Note that the current csv version has less data (no counts) :-/
   - Public Domain.
 
-- wordslist.csv - newer snapshot of words.hk data from https://words.hk/faiman/analysis/wordslist.csv
+- wordslist.csv - a recent (as of 2024-02) snapshot of words.hk data from https://words.hk/faiman/analysis/wordslist.csv
   - Public Domain.
   - Note that we are well aware of a multitude of various potential errors and
     (linguistically) controversial entries in the list. See "Decision Problem
