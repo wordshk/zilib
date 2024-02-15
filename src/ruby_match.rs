@@ -21,8 +21,9 @@ fn cantonese_charlist_half() -> &'static HashMap<char, Vec<String>> {
     })
 }
 
-// Maximum items for either text or pronunciation input.
-const RUBY_MATCH_MAX : u32 = 300;
+/// Maximum items for either text or pronunciation input. This is required because the algorithm is
+/// O(n^2) and can be slow/memory intensive for long inputs.
+pub const RUBY_MATCH_MAX : u32 = 300;
 
 const FULL_MATCH_SCORE : i32 = 1000;
 const HALF_MATCH_SCORE : i32 = 500;
