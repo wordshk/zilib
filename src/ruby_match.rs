@@ -133,18 +133,22 @@ fn _text_tokenizer(txt: &str) -> Vec<String> {
 }
 
 
-/// Ruby match. Returns a couple useful representations of the match:
-/// 1. The plain text with the ruby annotations. Useful for unit testing (since the results are easier to understand)
-/// 2. A zipped (token, pronunciation) list of the structure of the match.
-/// 3. The html representation of the match. Useful for just rendering the match in a web page.
-pub fn run_ruby_match(txt: &str, pronunciation: &str) -> (String, Vec<(String, String)>, String) {
+/// Ruby match. Returns a zipped (token, pronunciation) list of the structure of the match.
+pub fn ruby_match_zipped(txt: &str, pronunciation: &str) -> Vec<(String, String)> {
     let mut rm = RubyMatch::new(txt, pronunciation);
     rm.run();
-    (rm.plain_text(), rm.structure(), rm.gen_html())
+    rm.structure()
+}
+
+/// Ruby match. Returns a plain text representation. Useful for unit testing (since the results are easier to understand)
+pub fn ruby_match_plain(txt: &str, pronunciation: &str) -> String {
+    let mut rm = RubyMatch::new(txt, pronunciation);
+    rm.run();
+    rm.plain_text()
 }
 
 
-struct RubyMatch {
+pub struct RubyMatch {
     btd: HashMap<(i32, i32, bool), (i32, i32, bool)>,
     dp: HashMap<(i32, i32, bool), i32>,
     txt: Vec<String>,
