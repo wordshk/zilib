@@ -338,7 +338,7 @@ impl RubyMatch {
             if let Some(ruby) = ruby {
                 output.push((item.to_string(), ruby.iter().map(|pidx| self.pronunciation[*pidx as usize].clone()).collect::<Vec<String>>().join(" ")));
             } else {
-                output.push((item.to_string(), item.to_string()));
+                output.push((item.to_string(), "".to_string()));
             }
         }
         output
