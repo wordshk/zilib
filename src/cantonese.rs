@@ -49,7 +49,7 @@ fn get_ping3jam1_from_charlist_most_common(chars:Vec<char>) -> Vec<String> {
 /// Gets the pronunciation of a Cantonese string from wordlist by first segmenting the string.
 fn get_ping3jam1_from_wordlist(s: &str) -> Vec<String> {
     let wordlist = wordlist();
-    let (_, _, segments) = segmentation::end_user_friendly_segment(s);
+    let (_, _, segments) = segmentation::end_user_friendly_segment(s, None);
 
     let mut result = vec![];
     for segment in segments {

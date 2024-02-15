@@ -97,7 +97,9 @@ fn _bt(
     (odd, seg)
 }
 
-fn segment_with_dictionary(phrase: &str, dictionary: &HashSet<String>) -> (Vec<usize>, Vec<usize>) {
+/// Returns two lists as a pair: The first list contains indices of unmatched odd characters. The
+/// second list contains the indices of the segments (the segment's start index).
+pub fn segment_with_dictionary(phrase: &str, dictionary: Option<&HashSet<String>>) -> (Vec<usize>, Vec<usize>) {
     let chars : Vec<char> = phrase.chars().collect();
     let n = chars.len();
 
@@ -108,7 +110,12 @@ fn segment_with_dictionary(phrase: &str, dictionary: &HashSet<String>) -> (Vec<u
     let mut dp: HashMap<(usize, usize), f32> = HashMap::new();
     let mut bt: HashMap<(usize, usize), i32> = HashMap::new();
 
-    _dp(0, n, &chars, dictionary, &mut dp, &mut bt);
+    if let Some(dictionary) = dictionary {
+        _dp(0, n, &chars, dictionary, &mut dp, &mut bt);
+    } else {
+        let dictionary = load_dictionary();
+        _dp(0, n, &chars, dictionary, &mut dp, &mut bt);
+    }
     _bt(0, n, &bt)
 }
 
@@ -129,15 +136,10 @@ fn sequence_filter(x: &[usize]) -> Vec<usize> {
 }
 
 
-/// Returns a user-friendly segmentation result for text-based programs. May incur performance
-/// overhead due to cross-language barrier copying of the dictionary.
-pub fn end_user_friendly_segment_with_dictionary(s: &str, dictionary: HashSet<String>) -> (Vec<char>, Vec<char>, Vec<String>) {
-    _end_user_friendly_segment_with_dictionary(s, &dictionary)
-}
-
-/// No overhead internal version of the function. The dictionary is passed as a reference.
-fn _end_user_friendly_segment_with_dictionary(s: &str, dictionary: &HashSet<String>) -> (Vec<char>, Vec<char>, Vec<String>) {
-    let (odd_idx, segment_idx) = segment_with_dictionary(s, &dictionary);
+/// Returns a user-friendly segmentation result for text-based programs. If dictionary is None, we
+/// will load an out-of-date Cantonese dictionary from words.hk
+pub fn end_user_friendly_segment(s: &str, dictionary: Option<&HashSet<String>>) -> (Vec<char>, Vec<char>, Vec<String>) {
+    let (odd_idx, segment_idx) = segment_with_dictionary(s, dictionary);
     let s_chars: Vec<char> = s.chars().collect();
 
     let bad_words: Vec<char> = sequence_filter(&odd_idx).iter().map(|&idx| s_chars[idx]).collect();
@@ -152,12 +154,6 @@ fn _end_user_friendly_segment_with_dictionary(s: &str, dictionary: &HashSet<Stri
     }
 
     (bad_words, odd_words, segmentation)
-}
-
-/// Returns a user-friendly segmentation result for text-based programs.
-pub fn end_user_friendly_segment(s: &str) -> (Vec<char>, Vec<char>, Vec<String>) {
-    let dictionary = load_dictionary();
-    _end_user_friendly_segment_with_dictionary(s, &dictionary)
 }
 
 // load dictionary using include_str on csv
