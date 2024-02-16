@@ -12,16 +12,17 @@ words.hk. We may expand the scope later. Documentation and examples will come
 soon.
 
 Originally these functions were implemented in Python in the words.hk codebase,
-but we have ported them to Rust, with optional python bindings (in another
-zilib-python repository (coming soon)).
+but we have ported them to Rust, with optional python bindings - (see
+https://pypi.org/project/zilib/ )
 
 As of writing 2024-02, this repository is under active development. Consider
 the state "unstable" until this notice is removed.
 
 Pull requests are welcome as long as the changes are released under the same
-terms as in LICENSE.md. However, from experience (with email enquiries), we may
-sometimes take a while to respond. (Please do not interpret it as disinterest,
-we may simply have forgotten to check our emails...)
+terms as in LICENSE.md. However, from experience (with our response times to
+email enquiries), we may sometimes take a while to respond. (Please do not
+interpret it as disinterest, we may simply have forgotten to check our
+emails...)
 
 If you plan to open pull requests to make changes to data files in `list/`,
 please read the section Principles and Philosophies below. Also note that those
