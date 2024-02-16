@@ -20,7 +20,7 @@ class SkipTestCase:
     # Don't test this
     pass
 
-class TestPronunciation(SkipTestCase):
+class Pronunciation(SkipTestCase):
     """Tests"""
 
     def test_ping3jam1(self):
@@ -135,7 +135,7 @@ class TestPronunciation(SkipTestCase):
         self.assertEqual(cantonese.generate_variants("一" * 100, reverse_map=numbers2), ["①" * 100, "❶" * 100])
 
 
-class TestUtil(SkipTestCase):
+class Util(SkipTestCase):
     """Tests"""
 
     def test_find_until(self):
