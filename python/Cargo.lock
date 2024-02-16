@@ -442,8 +442,7 @@ checksum = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538"
 
 [[package]]
 name = "zilib"
-version = "0.1.0"
-source = "git+https://github.com/wordshk/zilib#5fe3ddde1dd4b900dfc5825880a150716986efc2"
+version = "0.1.8"
 dependencies = [
  "bzip2",
  "csv",

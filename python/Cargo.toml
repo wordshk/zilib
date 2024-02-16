@@ -5,8 +5,7 @@ edition = "2021"
 
 [dependencies]
 
-# TODO: maybe this needs to be a workspace instead?
-zilib = { git = "https://github.com/wordshk/zilib", version = "0.1.0" }
+zilib = { path = "../" }
 
 [lib]
 name = "zilib"
@@ -15,4 +14,3 @@ crate-type = ["cdylib"]
 [dependencies.pyo3]
 version = "0.20.2"
 features = ["extension-module"]
-

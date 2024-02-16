@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# This symlinks the files we want, according to the gitignore.
+# Symlinks are suggested by maturin at https://www.maturin.rs/project_layout:
+# > If you add a symlink in the data directory, we'll include the actual file
+# > so you have more flexibility.
+# XXX: However, maturin (1.4.0) just balks at symlinks. So we have to copy.
+# This seems to be a bug in module_writer.rs.
+
+# XXX: Also, using the data dir as suggested in the project_layout
+# documentation of maturin seems to be very error prone. I don't have hours to
+# read through the history of why maturin wants to package the data this way,
+# or what is *really* intended in PEP 427, or whether the data dir handling of
+# module_writer.rs (of maturin) is actually half-baked, but just putting the
+# data files inside the python module directory seems to just work. I have no
+# idea why they needed an extra thing here. The only problem is that files that
+# are actually gitignored don't get copied, and there's no documentation on how
+# to override this. So we'll have those files dangling there for the time being.
+
+DEST_DIR=zilib/lists
+mkdir -p "$DEST_DIR"
+rm -vf "$DEST_DIR"/*
+for ff in ../lists/*; do
+    if grep -q `basename "$ff"` ../.gitignore; then
+        echo "* Ignoring $ff since it is in .gitignore"
+    elif grep -q "Also ignore: `basename "$ff"`" $0; then
+        echo "* Ignoring $ff since it is explicitly ignored"
+    else
+        # This doesn't work, so we have to copy instead.
+        # ln -svf ../../../"$ff" data/data/lists/
+        cp -v "$ff" "$DEST_DIR"/
+    fi
+done
+
+# Also ignore: en_unigram_freq.csv.bz2
+# Also ignore: varcon.txt.bz2

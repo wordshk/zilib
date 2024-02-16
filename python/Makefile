@@ -1,4 +1,5 @@
 all:
+	./copy_packaged_lists
 	maturin build --sdist --release
 
 update_definitions:

@@ -1,1 +1,12 @@
 /target
+/python/target
+/venv
+/lists/Unihan.zip
+/lists/Unihan_DictionaryIndices.txt
+/lists/Unihan_DictionaryLikeData.txt
+/lists/Unihan_IRGSources.txt
+/lists/Unihan_NumericValues.txt
+/lists/Unihan_OtherMappings.txt
+/lists/Unihan_RadicalStrokeCounts.txt
+/lists/Unihan_Readings.txt
+/lists/Unihan_Variants.txt
