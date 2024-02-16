@@ -3,6 +3,8 @@ use zilib::common;
 use std::fs::File;
 use std::io::{self, Seek, SeekFrom, Read};
 
+use zilib::data;
+
 fn records_from_sorted_file(path: &str, target: &str, field_delim: u8, cmp: fn(&[u8], &[u8]) -> std::cmp::Ordering) -> io::Result<Vec<String>> {
     let pos = common::binary_search_file(path, target.as_bytes(), b'\n', field_delim, 0, None, 1, cmp)?;
     // println!("pos: {:?}", pos);

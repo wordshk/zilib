@@ -3,37 +3,59 @@ use std::fs::File;
 use std::io::BufRead;
 use std::sync::OnceLock;
 
-// Stub function if downloaded_data feature is not enabled
 #[cfg(not(feature = "downloaded_data"))]
-pub fn charlist() -> &'static HashMap<char, HashMap<String, u64>> {
-    panic!("charlist called without the downloaded_data feature enabled")
+pub enum DataKind {
+    CharList,
+    WordList,
+    RadicalLabelToChars,
+    UnihanData,
+    EnglishVariants,
+    Dictionary,
 }
 
-// A dictionary of (characters) => (lists of pronunciations)
+/// Set or get the path to the data file. Then, read the file and load the data (if applicable).
+/// This function is only available if the downloaded_data feature is not enabled.
+#[cfg(not(feature = "downloaded_data"))]
+pub fn initialize_data(which : DataKind, path: &str) {
+    match which {
+        DataKind::CharList => {
+            let result = _cantonese_charlist_with_jyutping(Some(path), None);
+        },
+
+        _ => {},
+    }
+}
+
+pub fn cantonese_charlist_with_jyutping() -> &'static HashMap<char, HashMap<String, u64>> {
 #[cfg(feature = "downloaded_data")]
-pub fn charlist() -> &'static HashMap<char, HashMap<String, u64>> {
+    return _cantonese_charlist_with_jyutping(None, Some(include_str!("../lists/charlist.json")));
+#[cfg(not(feature = "downloaded_data"))]
+    return _cantonese_charlist_with_jyutping(None, None);
+}
+
+fn _cantonese_charlist_with_jyutping(path : Option<&str>, data_str: Option<&str>) -> &'static HashMap<char, HashMap<String, u64>> {
     static DATA: OnceLock<HashMap<char, HashMap<String, u64>>> = OnceLock::new();
     DATA.get_or_init(|| {
-        // I tried using https://github.com/SOF3/include-flate and it didn't seem to work in terms
-        // of file size reduction. Perhaps the overhead of decompression is too high.
-        let json_data = include_str!("../lists/charlist.json");
-
-        //               character  pronunciation count
-        let data : HashMap<char, HashMap<String, u64>> = serde_json::from_str(json_data).unwrap(); // XXX: unwrap error detectable immediately in tests
-
-        data
+        if let Some(data_str) = data_str {
+            return serde_json::from_str(data_str).expect("Failed to parse data_str");
+        } else {
+            // Read from file
+            let file = File::open(path.expect("Please initialize the data path first")).expect(format!("Failed to open file: {:?}", path).as_str());
+            let reader = std::io::BufReader::new(file);
+            serde_json::from_reader(reader).expect("Failed to read/parse data from file")
+        }
     })
 }
 
 // Stub function if downloaded_data feature is not enabled
 #[cfg(not(feature = "downloaded_data"))]
-pub fn wordlist() -> &'static HashMap<String, Vec<String>> {
+pub fn cantonese_wordlist_with_jyutping() -> &'static HashMap<String, Vec<String>> {
     panic!("wordlist called without the downloaded_data feature enabled")
 }
 
 // A dictionary of (words) => (lists of pronunciations)
 #[cfg(feature = "downloaded_data")]
-pub fn wordlist() -> &'static HashMap<String, Vec<String>> {
+pub fn cantonese_wordlist_with_jyutping() -> &'static HashMap<String, Vec<String>> {
     static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
     DATA.get_or_init(|| {
         let csv_data = include_str!("../lists/wordslist.csv");

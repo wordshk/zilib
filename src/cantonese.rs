@@ -4,19 +4,19 @@ use regex::Regex;
 
 /// Gets the pronunciation of a Cantonese string from charlist.
 pub fn get_ping3jam1_from_charlist(chars:Vec<char>) -> Vec<Vec<String>> {
-    let charlist = data::charlist();
+    let charlist = data::cantonese_charlist_with_jyutping();
     chars.into_iter().map(|ch| charlist.get(&ch).map(|ps| ps.keys().map(|p| p.clone()).collect()).unwrap_or(vec![])).collect()
 }
 
 /// Gets the pronunciation of a Cantonese string from charlist, picking the most common pronunciation.
 fn get_ping3jam1_from_charlist_most_common(chars:Vec<char>) -> Vec<String> {
-    let charlist = data::charlist();
+    let charlist = data::cantonese_charlist_with_jyutping();
     chars.into_iter().map(|ch| charlist.get(&ch).map(|ps| ps.iter().max_by_key(|(_, &count)| count).map(|(p, _)| p.clone()).unwrap_or("".to_string())).unwrap_or("".to_string())).collect()
 }
 
 /// Gets the pronunciation of a Cantonese string from wordlist by first segmenting the string.
 fn get_ping3jam1_from_wordlist(s: &str) -> Vec<String> {
-    let wordlist = data::wordlist();
+    let wordlist = data::cantonese_wordlist_with_jyutping();
     let (_, _, segments) = segmentation::end_user_friendly_segment(s, None);
 
     let mut result = vec![];

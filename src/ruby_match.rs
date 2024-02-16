@@ -14,7 +14,7 @@ use std::sync::OnceLock;
 fn cantonese_charlist_half() -> &'static HashMap<char, Vec<String>> {
     static DATA: OnceLock<HashMap<char, Vec<String>>> = OnceLock::new();
     DATA.get_or_init(|| {
-        let charlist = data::charlist();
+        let charlist = data::cantonese_charlist_with_jyutping();
         charlist.iter()
             .map(|(ch, pd)| (*ch, pd.keys().map(|p| p.trim_end_matches(&['1', '2', '3', '4', '5', '6']).to_string()).collect()))
             .collect()
@@ -233,7 +233,7 @@ impl RubyMatch {
                 // Case: this token is ignored, just continue to next token
                 let the_arg = (t_i - 1, p_j, false);
                 (the_arg, self._lcs(the_arg)) // returned to max_arg, max_v
-            } else if data::charlist().get(&te0).map_or(false, |ps| ps.contains_key(&pe)) {
+            } else if data::cantonese_charlist_with_jyutping().get(&te0).map_or(false, |ps| ps.contains_key(&pe)) {
                 // Case: match! (somewhat greedily since we could also have matched in the half
                 // part...) We consume both the token and the pronunciation, and add a
                 // FULL_MATCH_SCORE with CORRUPTION_SCORE adjustment
