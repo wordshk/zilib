@@ -30,14 +30,21 @@ pub fn cantonese_charlist_with_jyutping() -> &'static HashMap<char, HashMap<Stri
 }
 
 fn _cantonese_charlist_with_jyutping(path : Option<&str>, data_str: Option<&str>, load: bool) -> &'static HashMap<char, HashMap<String, u64>> {
-    static PATH: OnceLock<String> = OnceLock::new();
+    let path = unsafe {
+        static mut PATH: OnceLock<String> = OnceLock::new();
+        if let Some(path) = path {
+            PATH.take();
+            let _ = PATH.set(path.to_string());
+        }
+        &PATH
+    };
     if load {
         static DATA: OnceLock<HashMap<char, HashMap<String, u64>>> = OnceLock::new();
         DATA.get_or_init(|| {
             if let Some(data_str) = data_str {
                 serde_json::from_str(data_str).expect("Failed to parse data_str")
             } else {
-                let path = PATH.get().expect("_cantonese_charlist_with_jyutping uninitialized. Please initialize the data path first").as_str();
+                let path = path.get().expect("_cantonese_charlist_with_jyutping uninitialized. Please initialize the data path first").as_str();
                 // Read from file
                 let file = File::open(path).expect(format!("Failed to open file: {:?}", path).as_str());
                 let reader = std::io::BufReader::new(file);
@@ -45,7 +52,6 @@ fn _cantonese_charlist_with_jyutping(path : Option<&str>, data_str: Option<&str>
             }
         })
     } else {
-        let _ = PATH.set(path.expect("No path provided").to_string());
         static DATA: OnceLock<HashMap<char, HashMap<String, u64>>> = OnceLock::new();
         DATA.get_or_init(|| { HashMap::new() })
     }
@@ -60,7 +66,15 @@ pub fn cantonese_wordlist_with_jyutping() -> &'static HashMap<String, Vec<String
 }
 
 fn _cantonese_wordlist_with_jyutping(path : Option<&str>, data_str: Option<&str>, load: bool) -> &'static HashMap<String, Vec<String>> {
-    static PATH: OnceLock<String> = OnceLock::new();
+    let path = unsafe {
+        static mut PATH: OnceLock<String> = OnceLock::new();
+        if let Some(path) = path {
+            PATH.take();
+            let _ = PATH.set(path.to_string());
+        }
+        &PATH
+    };
+
     if load {
         static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
         DATA.get_or_init(|| {
@@ -70,7 +84,7 @@ fn _cantonese_wordlist_with_jyutping(path : Option<&str>, data_str: Option<&str>
             let records : Box<dyn Iterator<Item = csv::Result<csv::StringRecord>>> = if let Some(data_str) = data_str {
                 Box::new(reader_builder.from_reader(data_str.as_bytes()).into_records())
             } else {
-                let path = PATH.get().expect("Please initialize the data path first");
+                let path = path.get().expect("Please initialize the data path first");
                 let file = File::open(path).expect(format!("Failed to open file: {:?}", path).as_str());
                 Box::new(reader_builder.from_reader(file).into_records())
             };
@@ -84,7 +98,6 @@ fn _cantonese_wordlist_with_jyutping(path : Option<&str>, data_str: Option<&str>
             data
         })
     } else {
-        let _ = PATH.set(path.expect("No path provided").to_string());
         static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
         DATA.get_or_init(|| { HashMap::new() })
     }
@@ -102,14 +115,21 @@ pub fn radical_label_to_chars() -> &'static HashMap<String, (Option<char>, char)
 /// The radical character can be None (hence the Optional result) if it is not included in the
 /// Kangxi Radicals block or the CJK Radicals Supplement block.
 pub fn _radical_label_to_chars(path : Option<&str>, data_str: Option<&str>, load: bool) -> &'static HashMap<String, (Option<char>, char)> {
-    static PATH: OnceLock<String> = OnceLock::new();
+    let path = unsafe {
+        static mut PATH: OnceLock<String> = OnceLock::new();
+        if let Some(path) = path {
+            PATH.take();
+            let _ = PATH.set(path.to_string());
+        }
+        &PATH
+    };
     if load {
         static RADICAL_LABEL_TO_CHARS : OnceLock<HashMap<String, (Option<char>, char)>> = OnceLock::new();
         RADICAL_LABEL_TO_CHARS.get_or_init(|| {
             let lines : Box<dyn Iterator<Item = std::io::Result<String>>> = if let Some(data_str) = data_str {
                 Box::new(data_str.lines().map(|l| Ok(l.to_string())))
             } else {
-                let path = PATH.get().expect("Please initialize the data path first");
+                let path = path.get().expect("Please initialize the data path first");
                 let file = File::open(path).expect(format!("Failed to open file: {:?}", path).as_str());
                 Box::new(std::io::BufReader::new(file).lines())
             };
@@ -158,7 +178,6 @@ pub fn _radical_label_to_chars(path : Option<&str>, data_str: Option<&str>, load
             map
         })
     } else {
-        let _ = PATH.set(path.expect("No path provided").to_string());
         static DATA: OnceLock<HashMap<String, (Option<char>, char)>> = OnceLock::new();
         DATA.get_or_init(|| { HashMap::new() })
     }
@@ -315,21 +334,27 @@ pub(crate) fn english_variants_data() -> &'static HashMap<String, String> {
 }
 
 fn _english_variants_data(path:Option<&str>, data_str: Option<&str>, load: bool) -> &'static HashMap<String, String> {
-    static PATH: OnceLock<String> = OnceLock::new();
+    let path = unsafe {
+        static mut PATH: OnceLock<String> = OnceLock::new();
+        if let Some(path) = path {
+            PATH.take();
+            let _ = PATH.set(path.to_string());
+        }
+        &PATH
+    };
     if load {
         static DATA: OnceLock<HashMap<String, String>> = OnceLock::new();
         DATA.get_or_init(|| {
             if let Some(data_str) = data_str {
                 serde_json::from_str(data_str).expect("Failed to parse data_str")
             } else {
-                let path = PATH.get().expect("Please initialize the data path first");
+                let path = path.get().expect("Please initialize the data path first");
                 let file = File::open(path).expect(format!("Failed to open file: {:?}", path).as_str());
                 let reader = std::io::BufReader::new(file);
                 serde_json::from_reader(reader).expect("Failed to read/parse data from file")
             }
         })
     } else {
-        let _ = PATH.set(path.expect("No path provided").to_string());
         static DATA: OnceLock<HashMap<String, String>> = OnceLock::new();
         DATA.get_or_init(|| { HashMap::new() })
     }

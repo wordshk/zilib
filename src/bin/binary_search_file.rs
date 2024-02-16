@@ -41,10 +41,6 @@ fn records_from_sorted_file(path: &str, target: &str, field_delim: u8, cmp: fn(&
 }
 
 fn main() -> io::Result<()> {
-    // use zilib::data;
-    // data::initialize_data(data::DataKind::RadicalLabelToChars, "lists/CJKRadicals.txt");
-    // let x = data::radical_label_to_chars();
-    // println!("{:?}", x);
     // Usage: binary_search_file <file> <target> [field_delim]
     let args: Vec<String> = std::env::args().collect();
     let path = &args[1];
