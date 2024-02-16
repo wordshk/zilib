@@ -442,7 +442,7 @@ checksum = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538"
 
 [[package]]
 name = "zilib"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "bzip2",
  "csv",
@@ -456,7 +456,7 @@ dependencies = [
 
 [[package]]
 name = "zilib-python"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "pyo3",
  "zilib",

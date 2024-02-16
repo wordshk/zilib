@@ -10,8 +10,8 @@ Usage: bump.py <version>
 """
 FILES = {
     "Cargo.toml": r'version = "\d+\.\d+\.\d+"',
-    "python/Cargo.toml": r'version = "\d+\.\d+\.\d+"',
-    "python/pyproject.toml": r'version = "\d+\.\d+\.\d+"',
+    "zilib-python/Cargo.toml": r'version = "\d+\.\d+\.\d+"',
+    "zilib-python/pyproject.toml": r'version = "\d+\.\d+\.\d+"',
 }
 
 
