@@ -14,130 +14,154 @@ pub enum DataKind {
 /// Set or get the path to the data file. Then, read the file and load the data (if applicable).
 pub fn initialize_data(which : DataKind, path: &str) {
     match which {
-        DataKind::CharList => { _cantonese_charlist_with_jyutping(Some(path), None); },
-        DataKind::WordList => { _cantonese_wordlist_with_jyutping(Some(path), None); },
-        DataKind::RadicalLabelToChars => { _radical_label_to_chars(Some(path), None); },
+        DataKind::CharList => { _cantonese_charlist_with_jyutping(Some(path), None, false); },
+        DataKind::WordList => { _cantonese_wordlist_with_jyutping(Some(path), None, false); },
+        DataKind::RadicalLabelToChars => { _radical_label_to_chars(Some(path), None, false); },
         DataKind::UnihanData => { _unihan_data(Some(path)); },
-        DataKind::EnglishVariants => { _english_variants_data(Some(path), None); },
+        DataKind::EnglishVariants => { _english_variants_data(Some(path), None, false); },
     }
 }
 
 pub fn cantonese_charlist_with_jyutping() -> &'static HashMap<char, HashMap<String, u64>> {
 #[cfg(feature = "downloaded_data")]
-    return _cantonese_charlist_with_jyutping(None, Some(include_str!("../lists/charlist.json")));
+    return _cantonese_charlist_with_jyutping(None, Some(include_str!("../lists/charlist.json")), true);
 #[cfg(not(feature = "downloaded_data"))]
-    return _cantonese_charlist_with_jyutping(None, None);
+    return _cantonese_charlist_with_jyutping(None, None, true);
 }
 
-fn _cantonese_charlist_with_jyutping(path : Option<&str>, data_str: Option<&str>) -> &'static HashMap<char, HashMap<String, u64>> {
-    static DATA: OnceLock<HashMap<char, HashMap<String, u64>>> = OnceLock::new();
-    DATA.get_or_init(|| {
-        if let Some(data_str) = data_str {
-            serde_json::from_str(data_str).expect("Failed to parse data_str")
-        } else {
-            // Read from file
-            let file = File::open(path.expect("Please initialize the data path first")).expect(format!("Failed to open file: {:?}", path).as_str());
-            let reader = std::io::BufReader::new(file);
-            serde_json::from_reader(reader).expect("Failed to read/parse data from file")
-        }
-    })
+fn _cantonese_charlist_with_jyutping(path : Option<&str>, data_str: Option<&str>, load: bool) -> &'static HashMap<char, HashMap<String, u64>> {
+    static PATH: OnceLock<String> = OnceLock::new();
+    if load {
+        static DATA: OnceLock<HashMap<char, HashMap<String, u64>>> = OnceLock::new();
+        DATA.get_or_init(|| {
+            if let Some(data_str) = data_str {
+                serde_json::from_str(data_str).expect("Failed to parse data_str")
+            } else {
+                let path = PATH.get().expect("_cantonese_charlist_with_jyutping uninitialized. Please initialize the data path first").as_str();
+                // Read from file
+                let file = File::open(path).expect(format!("Failed to open file: {:?}", path).as_str());
+                let reader = std::io::BufReader::new(file);
+                serde_json::from_reader(reader).expect("Failed to read/parse data from file")
+            }
+        })
+    } else {
+        PATH.get_or_init(|| { path.expect("No path provided").to_string() });
+        static DATA: OnceLock<HashMap<char, HashMap<String, u64>>> = OnceLock::new();
+        DATA.get_or_init(|| { HashMap::new() })
+    }
 }
 
 // A dictionary of (words) => (lists of pronunciations)
 pub fn cantonese_wordlist_with_jyutping() -> &'static HashMap<String, Vec<String>> {
 #[cfg(feature = "downloaded_data")]
-    return _cantonese_wordlist_with_jyutping(None, Some(include_str!("../lists/wordslist.csv")));
+    return _cantonese_wordlist_with_jyutping(None, Some(include_str!("../lists/wordslist.csv")), true);
 #[cfg(not(feature = "downloaded_data"))]
-    return _cantonese_wordlist_with_jyutping(None, None);
+    return _cantonese_wordlist_with_jyutping(None, None, true);
 }
 
-fn _cantonese_wordlist_with_jyutping(path : Option<&str>, data_str: Option<&str>) -> &'static HashMap<String, Vec<String>> {
-    static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
-    DATA.get_or_init(|| {
-        let mut reader_builder = Box::new(csv::ReaderBuilder::new()); // Apparently this Box fixes the problem of lifetime of the reader when the reader is boxed below.
-        reader_builder.has_headers(true).comment(Some(b'#')).flexible(true);
+fn _cantonese_wordlist_with_jyutping(path : Option<&str>, data_str: Option<&str>, load: bool) -> &'static HashMap<String, Vec<String>> {
+    static PATH: OnceLock<String> = OnceLock::new();
+    if load {
+        static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
+        DATA.get_or_init(|| {
+            let mut reader_builder = Box::new(csv::ReaderBuilder::new()); // Apparently this Box fixes the problem of lifetime of the reader when the reader is boxed below.
+            reader_builder.has_headers(true).comment(Some(b'#')).flexible(true);
 
-        let records : Box<dyn Iterator<Item = csv::Result<csv::StringRecord>>> = if let Some(data_str) = data_str {
-            Box::new(reader_builder.from_reader(data_str.as_bytes()).into_records())
-        } else {
-            let file = File::open(path.expect("Please initialize the data path first")).expect(format!("Failed to open file: {:?}", path).as_str());
-            Box::new(reader_builder.from_reader(file).into_records())
-        };
+            let records : Box<dyn Iterator<Item = csv::Result<csv::StringRecord>>> = if let Some(data_str) = data_str {
+                Box::new(reader_builder.from_reader(data_str.as_bytes()).into_records())
+            } else {
+                let path = PATH.get().expect("Please initialize the data path first");
+                let file = File::open(path).expect(format!("Failed to open file: {:?}", path).as_str());
+                Box::new(reader_builder.from_reader(file).into_records())
+            };
 
-        let mut data = HashMap::new();
-        for result in records {
-            let record = result.unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
-            let pronunciations = record.iter().skip(1).map(|s| s.to_string()).collect();
-            data.insert(record[0].to_string(), pronunciations);
-        }
-        data
-    })
+            let mut data = HashMap::new();
+            for result in records {
+                let record = result.unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
+                let pronunciations = record.iter().skip(1).map(|s| s.to_string()).collect();
+                data.insert(record[0].to_string(), pronunciations);
+            }
+            data
+        })
+    } else {
+        PATH.get_or_init(|| { path.expect("Please initialize the data path first").to_string() });
+        static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
+        DATA.get_or_init(|| { HashMap::new() })
+    }
 }
 
 pub fn radical_label_to_chars() -> &'static HashMap<String, (Option<char>, char)> {
 #[cfg(feature = "downloaded_data")]
-    return _radical_label_to_chars(None, Some(include_str!("../lists/CJKRadicals.txt")));
+    return _radical_label_to_chars(None, Some(include_str!("../lists/CJKRadicals.txt")), true);
 #[cfg(not(feature = "downloaded_data"))]
-    return _radical_label_to_chars(None, None);
+    return _radical_label_to_chars(None, None, true);
 }
 
 /// Map a unihan radical label (r"[0-9]+'{0,2}") to a pair of characters. The first character is
 /// the radical character, and the second character is the ideograph. (eg. "9" -> (Some('亻'), '人'))
 /// The radical character can be None (hence the Optional result) if it is not included in the
 /// Kangxi Radicals block or the CJK Radicals Supplement block.
-pub fn _radical_label_to_chars(path : Option<&str>, data_str: Option<&str>) -> &'static HashMap<String, (Option<char>, char)> {
-    static RADICAL_LABEL_TO_CHARS : OnceLock<HashMap<String, (Option<char>, char)>> = OnceLock::new();
-    RADICAL_LABEL_TO_CHARS.get_or_init(|| {
-        let lines : Box<dyn Iterator<Item = std::io::Result<String>>> = if let Some(data_str) = data_str {
-            Box::new(data_str.lines().map(|l| Ok(l.to_string())))
-        } else {
-            let file = File::open(path.expect("Please initialize the data path first")).expect(format!("Failed to open file: {:?}", path).as_str());
-            Box::new(std::io::BufReader::new(file).lines())
-        };
-
-        // From CJKRadicals.txt:
-        // There is one line per CJK radical number. Each line contains three
-        // fields, separated by a semicolon (';'). The first field is the
-        // CJK radical number. The second field is the CJK radical character,
-        // which may be empty if the CJK radical character is not included in
-        // the Kangxi Radicals block or the CJK Radicals Supplement block.
-        // The third field is the CJK unified ideograph.
-        //
-        // Example line:
-        // 9; 2F08; 4EBA
-        let mut map = HashMap::new();
-        for line in lines {
-            let line = line.expect(format!("Failed to read line in file: {:?}", path).as_str());
-            // continue if the line is a comment
-            if line.starts_with("#") {
-                continue;
-            }
-
-            // continue if the line is empty
-            if line.trim().len() == 0 {
-                continue;
-            }
-
-            let mut iter = line.split(";");
-
-            // this is the radical label, although it is said to be a number, it can contain non-numeric characters
-            let radical = iter.next().unwrap().trim(); // XXX: unwrap error detectable immediately in tests
-
-            // might not exist (only one special case...)
-            let radical_hex = iter.next().expect(format!("Invalid CJKRadicals.txt line: {}", line).as_str()).trim(); // XXX: unwrap error detectable immediately in tests
-
-            // guaranteed to exist. Decode hex to char
-            let ideograph = hex_to_char(iter.next().expect(format!("Invalid CJKRadicals.txt line: {}", line).as_str()).trim()); // XXX: unwrap error detectable immediately in tests
-
-            if radical_hex.len() > 0 {
-                map.insert(radical.to_string(), (Some(hex_to_char(radical_hex)), ideograph));
+pub fn _radical_label_to_chars(path : Option<&str>, data_str: Option<&str>, load: bool) -> &'static HashMap<String, (Option<char>, char)> {
+    static PATH: OnceLock<String> = OnceLock::new();
+    if load {
+        static RADICAL_LABEL_TO_CHARS : OnceLock<HashMap<String, (Option<char>, char)>> = OnceLock::new();
+        RADICAL_LABEL_TO_CHARS.get_or_init(|| {
+            let lines : Box<dyn Iterator<Item = std::io::Result<String>>> = if let Some(data_str) = data_str {
+                Box::new(data_str.lines().map(|l| Ok(l.to_string())))
             } else {
-                map.insert(radical.to_string(), (None, ideograph));
-            }
-        }
+                let path = PATH.get().expect("Please initialize the data path first");
+                let file = File::open(path).expect(format!("Failed to open file: {:?}", path).as_str());
+                Box::new(std::io::BufReader::new(file).lines())
+            };
 
-        map
-    })
+            // From CJKRadicals.txt:
+            // There is one line per CJK radical number. Each line contains three
+            // fields, separated by a semicolon (';'). The first field is the
+            // CJK radical number. The second field is the CJK radical character,
+            // which may be empty if the CJK radical character is not included in
+            // the Kangxi Radicals block or the CJK Radicals Supplement block.
+            // The third field is the CJK unified ideograph.
+            //
+            // Example line:
+            // 9; 2F08; 4EBA
+            let mut map = HashMap::new();
+            for line in lines {
+                let line = line.expect(format!("Failed to read line in file: {:?}", path).as_str());
+                // continue if the line is a comment
+                if line.starts_with("#") {
+                    continue;
+                }
+
+                // continue if the line is empty
+                if line.trim().len() == 0 {
+                    continue;
+                }
+
+                let mut iter = line.split(";");
+
+                // this is the radical label, although it is said to be a number, it can contain non-numeric characters
+                let radical = iter.next().unwrap().trim(); // XXX: unwrap error detectable immediately in tests
+
+                // might not exist (only one special case...)
+                let radical_hex = iter.next().expect(format!("Invalid CJKRadicals.txt line: {}", line).as_str()).trim(); // XXX: unwrap error detectable immediately in tests
+
+                // guaranteed to exist. Decode hex to char
+                let ideograph = hex_to_char(iter.next().expect(format!("Invalid CJKRadicals.txt line: {}", line).as_str()).trim()); // XXX: unwrap error detectable immediately in tests
+
+                if radical_hex.len() > 0 {
+                    map.insert(radical.to_string(), (Some(hex_to_char(radical_hex)), ideograph));
+                } else {
+                    map.insert(radical.to_string(), (None, ideograph));
+                }
+            }
+
+            map
+        })
+    } else {
+        PATH.get_or_init(|| { path.expect("Please initialize the data path first").to_string() });
+        static DATA: OnceLock<HashMap<String, (Option<char>, char)>> = OnceLock::new();
+        DATA.get_or_init(|| { HashMap::new() })
+    }
 }
 
 pub fn unihan_data() -> &'static HashMap<char, UnihanData> {
@@ -285,20 +309,28 @@ pub(crate) fn english_variants_data() -> &'static HashMap<String, String> {
     // I tried using https://github.com/SOF3/include-flate and it didn't seem to work in terms
     // of file size reduction. Perhaps the overhead of decompression is too high.
 #[cfg(feature = "downloaded_data")]
-    return _english_variants_data(None, Some(include_str!("../lists/english_variants.json")));
+    return _english_variants_data(None, Some(include_str!("../lists/english_variants.json")), true);
 #[cfg(not(feature = "downloaded_data"))]
-    return _english_variants_data(None, None);
+    return _english_variants_data(None, None, true);
 }
 
-fn _english_variants_data(path:Option<&str>, data_str: Option<&str>) -> &'static HashMap<String, String> {
-    static DATA: OnceLock<HashMap<String, String>> = OnceLock::new();
-    DATA.get_or_init(|| {
-        if let Some(data_str) = data_str {
-            serde_json::from_str(data_str).expect("Failed to parse data_str")
-        } else {
-            let file = File::open(path.expect("Please initialize the data path first")).expect(format!("Failed to open file: {:?}", path).as_str());
-            let reader = std::io::BufReader::new(file);
-            serde_json::from_reader(reader).expect("Failed to read/parse data from file")
-        }
-    })
+fn _english_variants_data(path:Option<&str>, data_str: Option<&str>, load: bool) -> &'static HashMap<String, String> {
+    static PATH: OnceLock<String> = OnceLock::new();
+    if load {
+        static DATA: OnceLock<HashMap<String, String>> = OnceLock::new();
+        DATA.get_or_init(|| {
+            if let Some(data_str) = data_str {
+                serde_json::from_str(data_str).expect("Failed to parse data_str")
+            } else {
+                let path = PATH.get().expect("Please initialize the data path first");
+                let file = File::open(path).expect(format!("Failed to open file: {:?}", path).as_str());
+                let reader = std::io::BufReader::new(file);
+                serde_json::from_reader(reader).expect("Failed to read/parse data from file")
+            }
+        })
+    } else {
+        PATH.get_or_init(|| { path.expect("Please initialize the data path first").to_string() });
+        static DATA: OnceLock<HashMap<String, String>> = OnceLock::new();
+        DATA.get_or_init(|| { HashMap::new() })
+    }
 }
