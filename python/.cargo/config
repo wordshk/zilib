@@ -1,0 +1,12 @@
+# Followed instructions from https://rustrepo.com/repo/PyO3-PyO3-rust-foreign-function-interface (via https://stackoverflow.com/questions/74452311/pyo3-getting-started-example-not-building-on-macos)
+[target.x86_64-apple-darwin]
+rustflags = [
+  "-C", "link-arg=-undefined",
+  "-C", "link-arg=dynamic_lookup",
+]
+
+[target.aarch64-apple-darwin]
+rustflags = [
+  "-C", "link-arg=-undefined",
+  "-C", "link-arg=dynamic_lookup",
+]
