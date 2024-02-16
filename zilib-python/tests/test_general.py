@@ -5,7 +5,7 @@ import unittest
 import bz2
 import csv
 
-class StemmerTest(unittest.TestCase):
+class LocalTests(unittest.TestCase):
     def test_degenerate(self):
         self.assertEqual('', zilib.american_english_stem(''))
         self.assertEqual('', zilib.american_english_stem('!'))
@@ -21,7 +21,6 @@ class StemmerTest(unittest.TestCase):
         self.assertEqual('latinizegreatest', zilib.american_english_stem('我latinize我greatest我'))
         self.assertEqual('greatestlatin', zilib.american_english_stem('我greatest我latinize我'))
 
-class LocalTests(unittest.TestCase):
     def test_ruby_match(self):
         def rm(a, b):
             return zilib.ruby_match_plain(a, b)
@@ -53,6 +52,12 @@ class LocalTests(unittest.TestCase):
         # More tests, but more polite
         self.assertEqual(zilib.end_user_friendly_segment('中國人')[2], '中國 人'.split())
         self.assertEqual(zilib.end_user_friendly_segment('唔知道')[2], '唔知 道'.split())  # Maybe we should use some other heuristic for this to ensure the singled out word is more commonly used as single word or something using frequency lists
+
+    def test_simple_loading(self):
+        # Just check whether there's some data here
+        self.assertTrue(len(zilib.wordshk_charset()) > 1000)
+        self.assertTrue(len(zilib.wordshk_variantmap()) > 1000)
+        self.assertTrue(len(zilib.wordshk_autoconvertmap()) > 10)
 
 if __name__ == '__main__':
     unittest.main()

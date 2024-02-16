@@ -1,6 +1,7 @@
-# "Safe" (not-so-controversial) map of variants from non-HK to HK. We
-# automatically convert these values to the canonical form. We also automatically
-# display the variants when users view any entry with these characters.
+# 'Safe' (not-so-controversial) map of variants to words.hk canonical
+# characters. In words.hk, we automatically convert these values to the
+# canonical form. We also automatically display the variants when users
+# view any entry with these characters.
 㨂	揀
 僞	偽
 兌	兑
@@ -80,7 +81,7 @@
 敘	敍
 祕	秘
 
-#hfchan: 異形你只留一個完全無死，本身可以分開打就係 Unicode 嘅 on9 歷史； 異構一來一到人名 etc 就 g 硬 g
+#hfchan: 異形你只留一個完全無死，本身可以分開打就係 Unicode 嘅歷史； 異構一來一到人名 etc 就 g 硬 g
 #櫈	凳
 #刹	剎
 #鎅	𠝹
