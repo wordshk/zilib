@@ -2,8 +2,17 @@
 from .zilib import *
 
 def _package_path():
+    # Whoever designed this API...
+
+    # Note: importlib.resources was introduced in python3.7, resources.files in
+    # python3.9, and resources.path is deprecated since 3.11. Our code in
+    # words.hk is running on 3.8. FML.
     from importlib import resources
-    return resources.files(__package__)
+    if hasattr(resources, 'path'):
+        with resources.path(__package__, '__init__.py') as p:
+            return p.parent
+    else:
+        return resources.files(__package__)
 
 def _initialize_resources():
     package_path = _package_path()
