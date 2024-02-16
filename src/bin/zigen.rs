@@ -150,7 +150,7 @@ fn wordshk_character_set() -> HashSet<char> {
 
 fn generate_wordshk_charset(out_filename : &str) -> io::Result<()> {
     let canonical_set = wordshk_character_set();
-    let unihan_data = data::unihan_data(None); // this can be a slow operation
+    let unihan_data = data::unihan_data(); // this can be a slow operation
     let mut out_file = File::create(out_filename)?;
     writeln!(out_file, "[")?;
 
@@ -362,7 +362,7 @@ fn radical_char_cmp_for_map_item(a: &(&char, &char), b: &(&char, &char)) -> Orde
 
 fn generate_wordshk_variantmap(out_filename : &str) -> io::Result<()> {
     let map = wordshk_variant_map().expect("Error generating wordshk variant map");
-    let unihan_data = data::unihan_data(None); // this can be a slow operation
+    let unihan_data = data::unihan_data(); // this can be a slow operation
     let mut out_file = File::create(out_filename)?;
     write!(out_file, "{{")?;
 
@@ -398,7 +398,7 @@ fn generate_wordshk_autoconvert(out_filename : &str) -> io::Result<()> {
         let to = splits[1].chars().next().unwrap();
         map.insert(fr, to);
     }
-    let unihan_data = data::unihan_data(None); // this can be a slow operation
+    let unihan_data = data::unihan_data(); // this can be a slow operation
     let mut out_file = File::create(out_filename)?;
     write!(out_file, "{{")?;
 
@@ -429,7 +429,7 @@ fn generate_wordshk_autoconvert(out_filename : &str) -> io::Result<()> {
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
-    data::unihan_data(Some("lists/Unihan_IRGSources.txt")); // initialization. this can be a slow operation
+    data::initialize_data(data::DataKind::UnihanData, "lists/Unihan_IRGSources.txt"); // initialization. this can be a slow operation
     match (args.get(1).map(String::as_str), args.get(2)) {
         (Some("generate_english_variants"), Some(out_filename) ) => generate_english_variants(out_filename),
         (Some("generate_wordshk_charset"), Some(out_filename)) => generate_wordshk_charset(out_filename),

@@ -15,7 +15,7 @@ pub fn radical_char_cmp(a_c: &char, b_c: &char) -> cmp::Ordering {
         return cmp::Ordering::Equal;
     }
 
-    let unihan_data = data::unihan_data(None); // this can be a slow operation
+    let unihan_data = data::unihan_data(); // this can be a slow operation
     let a_rs = unihan_data.get(a_c).map(|uh| uh.get_radical_strokes()).unwrap_or((None, None));
     let b_rs = unihan_data.get(b_c).map(|uh| uh.get_radical_strokes()).unwrap_or((None, None));
 

@@ -113,8 +113,8 @@ pub fn segment_with_dictionary(phrase: &str, dictionary: Option<&HashSet<String>
     if let Some(dictionary) = dictionary {
         _dp(0, n, &chars, dictionary, &mut dp, &mut bt);
     } else {
-        let dictionary = data::load_dictionary();
-        _dp(0, n, &chars, dictionary, &mut dp, &mut bt);
+        let dictionary : HashSet<String> = data::cantonese_wordlist_with_jyutping().keys().cloned().collect();
+        _dp(0, n, &chars, &dictionary, &mut dp, &mut bt);
     }
     _bt(0, n, &bt)
 }

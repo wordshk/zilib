@@ -1,6 +1,5 @@
 use crate::data;
 
-#[cfg(feature = "generated_data")]
 pub fn usa_english(word : &str) -> String {
     data::english_variants_data().get(word).unwrap_or(&word.to_string()).to_string()
 }
