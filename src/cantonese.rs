@@ -1,54 +1,22 @@
-use std::collections::HashMap;
 use std::sync::OnceLock;
-use crate::segmentation;
+use crate::{data, segmentation};
 use regex::Regex;
-
-// A dictionary of (characters) => (lists of pronunciations)
-pub fn charlist() -> &'static HashMap<char, HashMap<String, u64>> {
-    static DATA: OnceLock<HashMap<char, HashMap<String, u64>>> = OnceLock::new();
-    DATA.get_or_init(|| {
-        // I tried using https://github.com/SOF3/include-flate and it didn't seem to work in terms
-        // of file size reduction. Perhaps the overhead of decompression is too high.
-        let json_data = include_str!("../lists/charlist.json");
-
-        //               character  pronunciation count
-        let data : HashMap<char, HashMap<String, u64>> = serde_json::from_str(json_data).unwrap(); // XXX: unwrap error detectable immediately in tests
-
-        data
-    })
-}
-
-// A dictionary of (words) => (lists of pronunciations)
-pub fn wordlist() -> &'static HashMap<String, Vec<String>> {
-    static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
-    DATA.get_or_init(|| {
-        let csv_data = include_str!("../lists/wordslist.csv");
-        let mut data = HashMap::new();
-        let mut reader = csv::ReaderBuilder::new().has_headers(true).comment(Some(b'#')).flexible(true).from_reader(csv_data.as_bytes());
-        for result in reader.records() {
-            let record = result.unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
-            let pronunciations = record.iter().skip(1).map(|s| s.to_string()).collect();
-            data.insert(record[0].to_string(), pronunciations);
-        }
-        data
-    })
-}
 
 /// Gets the pronunciation of a Cantonese string from charlist.
 pub fn get_ping3jam1_from_charlist(chars:Vec<char>) -> Vec<Vec<String>> {
-    let charlist = charlist();
+    let charlist = data::charlist();
     chars.into_iter().map(|ch| charlist.get(&ch).map(|ps| ps.keys().map(|p| p.clone()).collect()).unwrap_or(vec![])).collect()
 }
 
 /// Gets the pronunciation of a Cantonese string from charlist, picking the most common pronunciation.
 fn get_ping3jam1_from_charlist_most_common(chars:Vec<char>) -> Vec<String> {
-    let charlist = charlist();
+    let charlist = data::charlist();
     chars.into_iter().map(|ch| charlist.get(&ch).map(|ps| ps.iter().max_by_key(|(_, &count)| count).map(|(p, _)| p.clone()).unwrap_or("".to_string())).unwrap_or("".to_string())).collect()
 }
 
 /// Gets the pronunciation of a Cantonese string from wordlist by first segmenting the string.
 fn get_ping3jam1_from_wordlist(s: &str) -> Vec<String> {
-    let wordlist = wordlist();
+    let wordlist = data::wordlist();
     let (_, _, segments) = segmentation::end_user_friendly_segment(s, None);
 
     let mut result = vec![];

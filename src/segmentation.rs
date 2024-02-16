@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::sync::OnceLock;
+use crate::data;
 
 /// Constants
 const BT_MATCH: i32 = 0;
@@ -113,7 +113,7 @@ pub fn segment_with_dictionary(phrase: &str, dictionary: Option<&HashSet<String>
     if let Some(dictionary) = dictionary {
         _dp(0, n, &chars, dictionary, &mut dp, &mut bt);
     } else {
-        let dictionary = load_dictionary();
+        let dictionary = data::load_dictionary();
         _dp(0, n, &chars, dictionary, &mut dp, &mut bt);
     }
     _bt(0, n, &bt)
@@ -156,17 +156,3 @@ pub fn end_user_friendly_segment(s: &str, dictionary: Option<&HashSet<String>>) 
     (bad_words, odd_words, segmentation)
 }
 
-// load dictionary using include_str on csv
-fn load_dictionary() -> &'static HashSet<String> {
-    static DATA: OnceLock<HashSet<String>> = OnceLock::new();
-    DATA.get_or_init(|| {
-        let csv_data = include_str!("../lists/wordslist.csv");
-        let mut data = HashSet::new();
-        let mut reader = csv::ReaderBuilder::new().has_headers(true).comment(Some(b'#')).flexible(true).from_reader(csv_data.as_bytes());
-        for result in reader.records() {
-            let record = result.unwrap(); // XXX: unwrap error detectable immediately in tests
-            data.insert(record[0].to_string());
-        }
-        data
-    })
-}

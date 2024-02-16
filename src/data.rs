@@ -1,8 +1,39 @@
-
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufRead;
 use std::sync::OnceLock;
+
+// A dictionary of (characters) => (lists of pronunciations)
+pub fn charlist() -> &'static HashMap<char, HashMap<String, u64>> {
+    static DATA: OnceLock<HashMap<char, HashMap<String, u64>>> = OnceLock::new();
+    DATA.get_or_init(|| {
+        // I tried using https://github.com/SOF3/include-flate and it didn't seem to work in terms
+        // of file size reduction. Perhaps the overhead of decompression is too high.
+        let json_data = include_str!("../lists/charlist.json");
+
+        //               character  pronunciation count
+        let data : HashMap<char, HashMap<String, u64>> = serde_json::from_str(json_data).unwrap(); // XXX: unwrap error detectable immediately in tests
+
+        data
+    })
+}
+
+// A dictionary of (words) => (lists of pronunciations)
+pub fn wordlist() -> &'static HashMap<String, Vec<String>> {
+    static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
+    DATA.get_or_init(|| {
+        let csv_data = include_str!("../lists/wordslist.csv");
+        let mut data = HashMap::new();
+        let mut reader = csv::ReaderBuilder::new().has_headers(true).comment(Some(b'#')).flexible(true).from_reader(csv_data.as_bytes());
+        for result in reader.records() {
+            let record = result.unwrap(); // XXX: unwrap error detectable immediately in tests due to inclusion of string during build time
+            let pronunciations = record.iter().skip(1).map(|s| s.to_string()).collect();
+            data.insert(record[0].to_string(), pronunciations);
+        }
+        data
+    })
+}
+
 
 /// Map a unihan radical label (r"[0-9]+'{0,2}") to a pair of characters. The first character is
 /// the radical character, and the second character is the ideograph. (eg. "9" -> (Some('亻'), '人'))
@@ -194,3 +225,28 @@ fn hex_to_char(s : &str) -> char {
     }
 }
 
+#[cfg(feature = "generated_data")]
+pub(crate) fn english_variants_data() -> &'static HashMap<String, String> {
+    static DATA: OnceLock<HashMap<String, String>> = OnceLock::new();
+    DATA.get_or_init(|| {
+        // I tried using https://github.com/SOF3/include-flate and it didn't seem to work in terms
+        // of file size reduction. Perhaps the overhead of decompression is too high.
+        let data = include_str!("../lists/english_variants.json");
+        serde_json::from_str(data).unwrap_or(HashMap::new())
+    })
+}
+
+// load dictionary using include_str on csv
+pub(crate) fn load_dictionary() -> &'static HashSet<String> {
+    static DATA: OnceLock<HashSet<String>> = OnceLock::new();
+    DATA.get_or_init(|| {
+        let csv_data = include_str!("../lists/wordslist.csv");
+        let mut data = HashSet::new();
+        let mut reader = csv::ReaderBuilder::new().has_headers(true).comment(Some(b'#')).flexible(true).from_reader(csv_data.as_bytes());
+        for result in reader.records() {
+            let record = result.unwrap(); // XXX: unwrap error detectable immediately in tests
+            data.insert(record[0].to_string());
+        }
+        data
+    })
+}
