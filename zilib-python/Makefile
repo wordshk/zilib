@@ -6,4 +6,4 @@ update_definitions:
 	python copy_function_definitions.py ../
 
 test:
-	python -m pytest .
+	maturin develop && python -m pytest .
