@@ -146,6 +146,7 @@ pub fn binary_search_file(
 }
 
 #[pymodule]
+#[pyo3(name="zilib")]
 fn zilib_python(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     /* START_OF_GENERATED_ADD_FUNCTIONS */
     m.add_function(wrap_pyfunction!(get_ping3jam1_from_charlist, m)?)?;

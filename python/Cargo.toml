@@ -9,7 +9,7 @@ edition = "2021"
 zilib = { git = "https://github.com/wordshk/zilib", version = "0.1.0" }
 
 [lib]
-name = "zilib_python"
+name = "zilib"
 crate-type = ["cdylib"]
 
 [dependencies.pyo3]
