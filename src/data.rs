@@ -3,7 +3,14 @@ use std::fs::File;
 use std::io::BufRead;
 use std::sync::OnceLock;
 
+// Stub function if downloaded_data feature is not enabled
+#[cfg(not(feature = "downloaded_data"))]
+pub fn charlist() -> &'static HashMap<char, HashMap<String, u64>> {
+    panic!("charlist called without the downloaded_data feature enabled")
+}
+
 // A dictionary of (characters) => (lists of pronunciations)
+#[cfg(feature = "downloaded_data")]
 pub fn charlist() -> &'static HashMap<char, HashMap<String, u64>> {
     static DATA: OnceLock<HashMap<char, HashMap<String, u64>>> = OnceLock::new();
     DATA.get_or_init(|| {
@@ -18,7 +25,14 @@ pub fn charlist() -> &'static HashMap<char, HashMap<String, u64>> {
     })
 }
 
+// Stub function if downloaded_data feature is not enabled
+#[cfg(not(feature = "downloaded_data"))]
+pub fn wordlist() -> &'static HashMap<String, Vec<String>> {
+    panic!("wordlist called without the downloaded_data feature enabled")
+}
+
 // A dictionary of (words) => (lists of pronunciations)
+#[cfg(feature = "downloaded_data")]
 pub fn wordlist() -> &'static HashMap<String, Vec<String>> {
     static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
     DATA.get_or_init(|| {
@@ -34,11 +48,17 @@ pub fn wordlist() -> &'static HashMap<String, Vec<String>> {
     })
 }
 
+// Stub function if downloaded_data feature is not enabled
+#[cfg(not(feature = "downloaded_data"))]
+pub fn radical_label_to_chars() -> &'static HashMap<String, (Option<char>, char)> {
+    panic!("radical_label_to_chars called without the downloaded_data feature enabled")
+}
 
 /// Map a unihan radical label (r"[0-9]+'{0,2}") to a pair of characters. The first character is
 /// the radical character, and the second character is the ideograph. (eg. "9" -> (Some('亻'), '人'))
 /// The radical character can be None (hence the Optional result) if it is not included in the
 /// Kangxi Radicals block or the CJK Radicals Supplement block.
+#[cfg(feature = "downloaded_data")]
 pub fn radical_label_to_chars() -> &'static HashMap<String, (Option<char>, char)> {
     static RADICAL_LABEL_TO_CHARS : OnceLock<HashMap<String, (Option<char>, char)>> = OnceLock::new();
     RADICAL_LABEL_TO_CHARS.get_or_init(|| {
@@ -87,7 +107,13 @@ pub fn radical_label_to_chars() -> &'static HashMap<String, (Option<char>, char)
     })
 }
 
+// Stub function if downloaded_data feature is not enabled
+#[cfg(not(feature = "downloaded_data"))]
+pub fn unihan_data(_initial_data_path : Option<&str>) -> &'static HashMap<char, UnihanData> {
+    panic!("unihan_data called without the downloaded_data feature enabled")
+}
 
+#[cfg(feature = "downloaded_data")]
 pub fn unihan_data(initial_data_path : Option<&str>) -> &'static HashMap<char, UnihanData> {
     static UNIHAN_DATA : OnceLock<HashMap<char, UnihanData>> = OnceLock::new();
     UNIHAN_DATA.get_or_init(|| {
@@ -236,7 +262,14 @@ pub(crate) fn english_variants_data() -> &'static HashMap<String, String> {
     })
 }
 
+// Stub function if downloaded_data feature is not enabled
+#[cfg(not(feature = "downloaded_data"))]
+pub(crate) fn load_dictionary() -> &'static HashSet<String> {
+    panic!("load_dictionary called without the downloaded_data feature enabled")
+}
+
 // load dictionary using include_str on csv
+#[cfg(feature = "downloaded_data")]
 pub(crate) fn load_dictionary() -> &'static HashSet<String> {
     static DATA: OnceLock<HashSet<String>> = OnceLock::new();
     DATA.get_or_init(|| {

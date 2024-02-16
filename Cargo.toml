@@ -16,3 +16,4 @@ unicode_categories = "0.1.1"
 [features]
 default = ["generated_data"]
 generated_data = []
+downloaded_data = []
