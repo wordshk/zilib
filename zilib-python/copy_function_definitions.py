@@ -13,14 +13,10 @@ def join_space(s: str) -> str:
 
 ignored_functions = set([
     "binary_search_file",
-    "unihan_data",
     "jyutping_validator",
     "radical_char_cmp",
     "radical_cmp",
     "radical_label_to_chars",
-    "charlist",
-    "wordlist",
-    "initialize_data",
     ])
 ignored_rust_files = set([
     "data.rs",
