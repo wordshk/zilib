@@ -6,8 +6,7 @@ Unit tests
 
 import unittest
 
-import zilib_python as common
-import zilib_python as zilib
+import zilib
 # from pylib import cantonese
 # from pylib import util
 
@@ -150,41 +149,41 @@ class TestCommon(BaseTestCase):
     """Tests"""
 
     def test_sentence(self):
-        self.assertEqual(common.looks_like_a_sentence('你好'), False)
-        self.assertEqual(common.looks_like_a_sentence('你好！'), True)
-        self.assertEqual(common.looks_like_a_sentence('一本書'), False)
-        self.assertEqual(common.looks_like_a_sentence('一本，書'), True)
-        self.assertEqual(common.looks_like_a_sentence('一本書。'), True)
-        self.assertEqual(common.looks_like_a_sentence('一本書？'), True)
-        self.assertEqual(common.looks_like_a_sentence('屌你老母仆街陷家鏟'), True)
+        self.assertEqual(zilib.looks_like_a_sentence('你好'), False)
+        self.assertEqual(zilib.looks_like_a_sentence('你好！'), True)
+        self.assertEqual(zilib.looks_like_a_sentence('一本書'), False)
+        self.assertEqual(zilib.looks_like_a_sentence('一本，書'), True)
+        self.assertEqual(zilib.looks_like_a_sentence('一本書。'), True)
+        self.assertEqual(zilib.looks_like_a_sentence('一本書？'), True)
+        self.assertEqual(zilib.looks_like_a_sentence('屌你老母仆街陷家鏟'), True)
 
     def test_guess_language(self):
         CHINESE = "zh"
         ENGLISH = "en"
         UNKNOWN_LANGUAGE = "xx"
-        self.assertEqual(common.guess_language("我的名字叫做「小明」"), CHINESE)
-        self.assertEqual(common.guess_language("「小明」"), CHINESE)
-        self.assertEqual(common.guess_language("Happy birthday"), ENGLISH)
-        self.assertEqual(common.guess_language("Holy shit thank you!!!!"), ENGLISH)
-        self.assertEqual(common.guess_language("你好，我叫Jessica"), CHINESE)
-        self.assertEqual(common.guess_language("介紹我個boss俾你識"), CHINESE)
-        self.assertEqual(common.guess_language("Come on, James，可不可以成熟一點呢"), CHINESE)
+        self.assertEqual(zilib.guess_language("我的名字叫做「小明」"), CHINESE)
+        self.assertEqual(zilib.guess_language("「小明」"), CHINESE)
+        self.assertEqual(zilib.guess_language("Happy birthday"), ENGLISH)
+        self.assertEqual(zilib.guess_language("Holy shit thank you!!!!"), ENGLISH)
+        self.assertEqual(zilib.guess_language("你好，我叫Jessica"), CHINESE)
+        self.assertEqual(zilib.guess_language("介紹我個boss俾你識"), CHINESE)
+        self.assertEqual(zilib.guess_language("Come on, James，可不可以成熟一點呢"), CHINESE)
 
         # Marginal cases
-        self.assertEqual(common.guess_language("Fuck 屌你"), CHINESE)
-        self.assertEqual(common.guess_language("Fuck you 屌你"), ENGLISH)
-        self.assertEqual(common.guess_language("Happy birthday 祝你生日快樂"), CHINESE)
-        self.assertEqual(common.guess_language("多謝晒！Holy shit thank you!!!!"), ENGLISH)
+        self.assertEqual(zilib.guess_language("Fuck 屌你"), CHINESE)
+        self.assertEqual(zilib.guess_language("Fuck you 屌你"), ENGLISH)
+        self.assertEqual(zilib.guess_language("Happy birthday 祝你生日快樂"), CHINESE)
+        self.assertEqual(zilib.guess_language("多謝晒！Holy shit thank you!!!!"), ENGLISH)
 
         # Unknown
-        self.assertEqual(common.guess_language("小"), UNKNOWN_LANGUAGE)
-        self.assertEqual(common.guess_language("屌"), UNKNOWN_LANGUAGE)
-        self.assertEqual(common.guess_language(""), UNKNOWN_LANGUAGE)
-        self.assertEqual(common.guess_language("i"), UNKNOWN_LANGUAGE)
-        self.assertEqual(common.guess_language("ib"), UNKNOWN_LANGUAGE)
-        self.assertEqual(common.guess_language("..."), UNKNOWN_LANGUAGE)
-        self.assertEqual(common.guess_language("!@#$%"), UNKNOWN_LANGUAGE)
-        self.assertEqual(common.guess_language("。"), UNKNOWN_LANGUAGE)
+        self.assertEqual(zilib.guess_language("小"), UNKNOWN_LANGUAGE)
+        self.assertEqual(zilib.guess_language("屌"), UNKNOWN_LANGUAGE)
+        self.assertEqual(zilib.guess_language(""), UNKNOWN_LANGUAGE)
+        self.assertEqual(zilib.guess_language("i"), UNKNOWN_LANGUAGE)
+        self.assertEqual(zilib.guess_language("ib"), UNKNOWN_LANGUAGE)
+        self.assertEqual(zilib.guess_language("..."), UNKNOWN_LANGUAGE)
+        self.assertEqual(zilib.guess_language("!@#$%"), UNKNOWN_LANGUAGE)
+        self.assertEqual(zilib.guess_language("。"), UNKNOWN_LANGUAGE)
 
     def test_ruby_match(self):
         def rm(a, b):

@@ -4,8 +4,8 @@ use std::io::BufRead;
 use std::sync::OnceLock;
 
 pub enum DataKind {
-    CharList,
-    WordList,
+    CantoneseCharListWithJyutping,
+    CantoneseWordListWithJyutping,
     RadicalLabelToChars,
     UnihanData,
     EnglishVariants,
@@ -14,8 +14,8 @@ pub enum DataKind {
 /// Set or get the path to the data file. Then, read the file and load the data (if applicable).
 pub fn initialize_data(which : DataKind, path: &str) {
     match which {
-        DataKind::CharList => { _cantonese_charlist_with_jyutping(Some(path), None, false); },
-        DataKind::WordList => { _cantonese_wordlist_with_jyutping(Some(path), None, false); },
+        DataKind::CantoneseCharListWithJyutping => { _cantonese_charlist_with_jyutping(Some(path), None, false); },
+        DataKind::CantoneseWordListWithJyutping => { _cantonese_wordlist_with_jyutping(Some(path), None, false); },
         DataKind::RadicalLabelToChars => { _radical_label_to_chars(Some(path), None, false); },
         DataKind::UnihanData => { _unihan_data(Some(path)); },
         DataKind::EnglishVariants => { _english_variants_data(Some(path), None, false); },

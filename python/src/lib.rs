@@ -1,21 +1,17 @@
 use std::collections::HashSet;
 
 use zilib::cantonese;
-// use zilib::cjk;
 use zilib::common;
 use zilib::english;
 use zilib::ruby_match;
 use zilib::segmentation;
+use zilib::data;
 
 // Python (PyO3) bindings for functions in zilib
 
 use pyo3::prelude::*;
 
 /* START_OF_GENERATED_FUNCTION_WRAPPERS */
-/// Map a unihan radical label (r"[0-9]+'{0,2}") to a pair of characters. The first character is
-/// the radical character, and the second character is the ideograph. (eg. "9" -> (Some('亻'), '人'))
-/// The radical character can be None (hence the Optional result) if it is not included in the
-/// Kangxi Radicals block or the CJK Radicals Supplement block.
 /// Gets the pronunciation of a Cantonese string from charlist.
 #[pyfunction]
 pub fn get_ping3jam1_from_charlist(chars:Vec<char>) -> Vec<Vec<String>> {
@@ -145,6 +141,21 @@ pub fn binary_search_file(
 
 }
 
+#[pyfunction]
+pub fn initialize_data(kind: &str, path: &str) -> std::io::Result<()> {
+    let kind = match kind {
+        "CantoneseCharListWithJyutping" => data::DataKind::CantoneseCharListWithJyutping,
+        "CantoneseWordListWithJyutping" => data::DataKind::CantoneseWordListWithJyutping,
+        "RadicalLabelToChars" => data::DataKind::RadicalLabelToChars,
+        "UnihanData" => data::DataKind::UnihanData,
+        "EnglishVariants" => data::DataKind::EnglishVariants,
+        _ => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid data kind string")); }
+    };
+
+    data::initialize_data(kind, path);
+    Ok(())
+}
+
 #[pymodule]
 #[pyo3(name="zilib")]
 fn zilib_python(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
@@ -172,6 +183,7 @@ fn zilib_python(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
 
     m.add_function(wrap_pyfunction!(ruby_match_max, m)?)?;
     m.add_function(wrap_pyfunction!(binary_search_file, m)?)?;
+    m.add_function(wrap_pyfunction!(initialize_data, m)?)?;
 
     Ok(())
 }

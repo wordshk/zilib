@@ -20,6 +20,10 @@ ignored_functions = set([
     "radical_label_to_chars",
     "charlist",
     "wordlist",
+    "initialize_data",
+    ])
+ignored_rust_files = set([
+    "data.rs",
     ])
 # Copy all function definitions from source path to destination file
 def main():
@@ -45,6 +49,8 @@ def main():
             dest.write(line)
 
         for file in glob.glob(source_directory + "/src/*.rs"):
+            if os.path.basename(file) in ignored_rust_files:
+                continue
             # Remember doc comments lines here
             comments = []
             base_name = os.path.basename(file).split(".")[0]

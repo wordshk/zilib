@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import zilib_python as zilib
+import zilib
 import unittest
 import bz2
 import csv
