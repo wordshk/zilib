@@ -6,4 +6,4 @@ update_definitions:
 	python copy_function_definitions.py ../
 
 test:
-	pytest .
+	python -m pytest .

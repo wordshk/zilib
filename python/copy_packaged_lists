@@ -17,7 +17,7 @@
 # are actually gitignored don't get copied, and there's no documentation on how
 # to override this. So we'll have those files dangling there for the time being.
 
-DEST_DIR=zilib/lists
+DEST_DIR=python/zilib/lists
 mkdir -p "$DEST_DIR"
 rm -vf "$DEST_DIR"/*
 for ff in ../lists/*; do

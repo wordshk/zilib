@@ -17,3 +17,7 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+
+[tool.maturin]
+python-source = "python"
+
