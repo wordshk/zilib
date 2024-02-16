@@ -45,7 +45,7 @@ fn _cantonese_charlist_with_jyutping(path : Option<&str>, data_str: Option<&str>
             }
         })
     } else {
-        PATH.get_or_init(|| { path.expect("No path provided").to_string() });
+        let _ = PATH.set(path.expect("No path provided").to_string());
         static DATA: OnceLock<HashMap<char, HashMap<String, u64>>> = OnceLock::new();
         DATA.get_or_init(|| { HashMap::new() })
     }
@@ -84,7 +84,7 @@ fn _cantonese_wordlist_with_jyutping(path : Option<&str>, data_str: Option<&str>
             data
         })
     } else {
-        PATH.get_or_init(|| { path.expect("Please initialize the data path first").to_string() });
+        let _ = PATH.set(path.expect("No path provided").to_string());
         static DATA: OnceLock<HashMap<String, Vec<String>>> = OnceLock::new();
         DATA.get_or_init(|| { HashMap::new() })
     }
@@ -158,7 +158,7 @@ pub fn _radical_label_to_chars(path : Option<&str>, data_str: Option<&str>, load
             map
         })
     } else {
-        PATH.get_or_init(|| { path.expect("Please initialize the data path first").to_string() });
+        let _ = PATH.set(path.expect("No path provided").to_string());
         static DATA: OnceLock<HashMap<String, (Option<char>, char)>> = OnceLock::new();
         DATA.get_or_init(|| { HashMap::new() })
     }
@@ -329,7 +329,7 @@ fn _english_variants_data(path:Option<&str>, data_str: Option<&str>, load: bool)
             }
         })
     } else {
-        PATH.get_or_init(|| { path.expect("Please initialize the data path first").to_string() });
+        let _ = PATH.set(path.expect("No path provided").to_string());
         static DATA: OnceLock<HashMap<String, String>> = OnceLock::new();
         DATA.get_or_init(|| { HashMap::new() })
     }
