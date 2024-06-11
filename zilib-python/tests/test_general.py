@@ -2,8 +2,6 @@
 
 import zilib
 import unittest
-import bz2
-import csv
 
 class LocalTests(unittest.TestCase):
     def test_degenerate(self):
@@ -44,6 +42,34 @@ class LocalTests(unittest.TestCase):
         t = "#卜 #正 #卜 #正"
         p = "haa1 lou2 haa1 lou2"
         self.assertEqual(rm(t, p), "#卜haa1   #正lou2   #卜haa1   #正lou2")
+
+        t = "有班#怪叔叔 睺緊個正太"
+        p = "jau5 baan1 gwaai3 suk1 suk1 hau1 gan2 go3 zing3 taai3"
+        self.assertEqual(rm(t, p), "有jau5 班baan1 #怪叔叔gwaai3suk1suk1   睺hau1 緊gan2 個go3 正zing3 太taai3")
+
+        t = "有#怪叔叔 呀"
+        p = "jau5 gwaai3 suk1 suk1 aa3"
+        self.assertEqual(rm(t, p), "有jau5 #怪叔叔gwaai3suk1suk1   呀aa3")
+
+        t = "嘅#食物 質"
+        p = "ge3 sik6 zat1"
+        self.assertEqual(rm(t, p), "嘅ge3 #食物sik6   質zat1")
+
+        t = "一個二個"
+        p = "gau2 m4 daap3 baat3" # Wrong pronunciation for testing
+        self.assertEqual(rm(t, p), "一gau2 個m4 二daap3 個baat3")
+
+        t = "劉博"
+        p = "puk1 zaak6" # Wrong pronunciation for testing
+        self.assertEqual(rm(t, p), "劉puk1 博zaak6")
+
+        t = "劉博士"
+        p = "puk1 bok3 si6" # Wrong pronunciation for testing
+        self.assertEqual(rm(t, p), "劉puk1 博bok3 士si6")
+
+        t = "劉博士劉博士劉博士劉博士"
+        p = "puk1 bok3 si6 puk1 bok3 si6 puk1 bok3 si6 puk1 bok3 si6" # Wrong pronunciation for testing
+        self.assertEqual(rm(t, p), "劉puk1 博bok3 士si6 劉puk1 博bok3 士si6 劉puk1 博bok3 士si6 劉puk1 博bok3 士si6")
 
     def test_segmentation(self):
         self.assertEqual(zilib.end_user_friendly_segment("你真係咩事屈機呀唔知死未!")[2], ['你', '真係', '咩事', '屈機', '呀', '唔知死', '未', '!'])

@@ -26,15 +26,14 @@ fn cantonese_charlist_half() -> &'static HashMap<char, Vec<String>> {
 pub const RUBY_MATCH_MAX : u32 = 300;
 
 const FULL_MATCH_SCORE : i32 = 1000;
-const HALF_MATCH_SCORE : i32 = 500;
+const HALF_MATCH_SCORE : i32 = 300;
 
 // Some token value to force the lcs to prefer one unmatched situation over
 // another. Not totally sure what value this should contain to be correct.
 const EPSILON_SCORE : i32 = 1;
 
-// Score to discourage unmatched pronunciations from "corrupting" well matched txt-pr pairs.
-// XXX: No idea what this is about, might actually be useless.
-const CORRUPTION_SCORE: i32 = 10;
+// Link score to encourage pronunciations to stick to a link
+const LINK_SCORE : i32 = 1;
 
 fn ruby_text_ignore() -> &'static HashSet<char> {
     static DATA: OnceLock<HashSet<char>> = OnceLock::new();
@@ -150,8 +149,8 @@ pub fn ruby_match_plain(txt: &str, pronunciation: &str) -> String {
 
 
 pub struct RubyMatch {
-    btd: HashMap<(i32, i32, bool), (i32, i32, bool)>,
-    dp: HashMap<(i32, i32, bool), i32>,
+    btd: HashMap<(i32, i32), (i32, i32)>,
+    dp: HashMap<(i32, i32), i32>,
     txt: Vec<String>,
     pronunciation: Vec<String>,
     ltxt: i32,
@@ -197,18 +196,22 @@ impl RubyMatch {
         }
     }
 
-    fn _lcs(&mut self, arg: (i32, i32, bool)) -> i32 {
-        let (t_i, p_j, already_mismatch) = arg;
+    fn _lcs(&mut self, arg: (i32, i32)) -> i32 {
+        let (t_i, p_j) = arg;
+
+        // Base cases
         if t_i == -1 && p_j == -1 {
             // Seems like we should prefer this case over the below (only either
             // t_i or p_j < 0) but from the tests it doesn't seem to matter?
             return 0;
         }
 
+        // Base cases
         if t_i == -1 || p_j == -1 {
             return 0;
         }
 
+        // If we already have a result, just return it
         if let Some(&ret) = self.dp.get(&arg) {
             return ret;
         }
@@ -221,68 +224,80 @@ impl RubyMatch {
         let te = self.txt[t_i as usize].clone();
         let pe = self.pronunciation[p_j as usize].clone();
 
-        let te0 = if te.starts_with('#') && te.len() > 1 {
+        let te0 = if te.starts_with('#') && te.chars().count() == 2 {
             // Special case to try match some single char '#' links
+            // FIXME: check whether we still need this:
             te[1..].chars()
         } else {
             te.chars()
         }.next().expect("te0 is guaranteed to exist due to tokenizer implementation");
 
         let (max_arg, max_v) =
-            if ruby_text_ignore().contains(&te0) {
+            if te0 != '#' && ruby_text_ignore().contains(&te0) {
                 // Case: this token is ignored, just continue to next token
-                let the_arg = (t_i - 1, p_j, false);
+                let the_arg = (t_i - 1, p_j);
+                // println!("ignored: {} {}", te0, pe);
                 (the_arg, self._lcs(the_arg)) // returned to max_arg, max_v
             } else if data::cantonese_charlist_with_jyutping().get(&te0).map_or(false, |ps| ps.contains_key(&pe)) {
                 // Case: match! (somewhat greedily since we could also have matched in the half
-                // part...) We consume both the token and the pronunciation, and add a
-                // FULL_MATCH_SCORE with CORRUPTION_SCORE adjustment
-                let the_arg = (t_i - 1, p_j - 1, false);
-                (the_arg, self._lcs(the_arg) + FULL_MATCH_SCORE + if !already_mismatch { CORRUPTION_SCORE } else { 0 }) // returned to max_arg, max_v
+                // part...) We consume both the token and the pronunciation, and add a FULL_MATCH_SCORE
+                // println!("matched: {} {} {} {}", te0, pe, t_i, p_j);
+                let the_arg = (t_i - 1, p_j - 1);
+                (the_arg, self._lcs(the_arg) + FULL_MATCH_SCORE)  // returned to max_arg, max_v
             } else {
+                // Now we need to check all the possible ways to continue
+
+                // Case 1: we skip the pronunciation
+                let mut the_arg = (t_i, p_j-1);
+                let mut v = self._lcs(the_arg);
+
+                // Case 1.5: we skip the pronunciation more aggressively if the token is a link or
+                // is not a CJK character
+                if te0 == '#' || !common::is_cjk_cp(te0 as u32) {
+                    v += LINK_SCORE;
+                }
+
+                // Case 2: we skip the token
+                let targ = (t_i-1, p_j);
+                let tv = self._lcs(targ);
+                if tv > v {
+                    the_arg = targ;
+                    v = tv;
+                }
+
+                // Case 3: we skip both the token and the pronunciation, and add a small score to
+                // encourage "one pronunciation per token"
+                // if te.len() > 1 || common::is_cjk_cp(te0 as u32) { // this if condition is probably not needed?
+                let targ = (t_i-1, p_j-1);
+                let tv = self._lcs(targ) + EPSILON_SCORE + if te0 == '#' { LINK_SCORE } else { 0 };
+                if tv >= v {  // We also prefer this if the score is the same
+                    the_arg = targ;
+                    v = tv;
+                }
+                // }
+
+                // Case 4: we try to match the half part of the pronunciation
                 if cantonese_charlist_half().get(&te0).map_or(false, |ps| ps.contains(&pe.trim_end_matches(&['1', '2', '3', '4', '5', '6']).to_string())) {
-                    let the_arg = (t_i - 1, p_j - 1, false);
-                    let v = self._lcs(the_arg) + HALF_MATCH_SCORE + if !already_mismatch { CORRUPTION_SCORE } else { 0 };
-                    (the_arg, v) // returned to max_arg, max_v
-                } else {
-                    // At this point already_mismatch does not matter, so let's see
-                    // if we already have a prior result from our negation.
-                    let negarg = (t_i, p_j, !already_mismatch);
-                    if self.dp.contains_key(&negarg) {
-                        (self.btd[&negarg], self.dp[&negarg])
-                    } else {
-                        let mut the_arg = (t_i, p_j-1, true);
-                        let mut v = self._lcs(the_arg);
-
-                        let targ = (t_i-1, p_j, true);
-                        let tv = self._lcs(targ);
-
-                        if tv > v {
-                            the_arg = targ;
-                            v = tv;
-                        }
-
-                        // if te.len() > 1 || common::is_cjk_cp(te0 as u32) { // this if condition is probably not needed?
-                        let targ = (t_i-1, p_j-1, false);
-                        let tv = self._lcs(targ) + EPSILON_SCORE;
-                        if tv > v {
-                            the_arg = targ;
-                            v = tv;
-                        }
-                        // }
-
-                        (the_arg, v)
+                    let targ = (t_i - 1, p_j - 1);
+                    let tv = self._lcs(targ) + HALF_MATCH_SCORE;
+                    if tv > v {
+                        // println!("half match: te0{} pe{} t_i{} p_j{} tv{}", te0, pe, t_i, p_j, tv);
+                        the_arg = targ;
+                        v = tv;
                     }
                 }
+
+                (the_arg, v)
             };
 
         self.btd.insert(arg, max_arg);
         self.dp.insert(arg, max_v);
+        // println!("te0:{} t_i:{} p_j:{} mi:{} mj:{} v:{}", te0, t_i, p_j, max_arg.0, max_arg.1, max_v);
         max_v
     }
 
 
-    fn _bt(&mut self, in_arg: (i32, i32, bool)) {
+    fn _bt(&mut self, in_arg: (i32, i32)) {
         let mut arg = in_arg;
         while let Some(&next_arg) = self.btd.get(&arg) {
             if arg.1 != next_arg.1 {
@@ -302,8 +317,8 @@ impl RubyMatch {
             return None;
         }
         if self.ruby.is_empty() {
-            self.lcs_result = self._lcs((self.ltxt - 1, self.lpr - 1, false));
-            self._bt((self.ltxt - 1, self.lpr - 1, false));
+            self.lcs_result = self._lcs((self.ltxt - 1, self.lpr - 1));
+            self._bt((self.ltxt - 1, self.lpr - 1));
         }
         Some(&self.ruby)
     }

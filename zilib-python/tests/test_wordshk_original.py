@@ -216,7 +216,7 @@ class TestCommon(BaseTestCase):
 
         t = "九唔搭八。"
         p = "jat1 gau2 ji6 saam1 sei3 daap3"
-        r = "九jat1gau2 唔ji6saam1sei3 搭daap3 八 。"
+        r = "九jat1gau2ji6saam1 唔sei3 搭daap3 八 。"
         self.assertEqual(rm(t, p), r)
 
         t = "ＳＥＲＶＥＲ。"
@@ -312,7 +312,7 @@ class TestCommon(BaseTestCase):
         # Not obvious what the result should be.
         t = "九唔搭八。"
         p = "jat1 ji6 saam1 sei3 aa1 aa1"
-        self.assertEqual(rm(t, p), "九jat1 唔ji6 搭saam1 八sei3aa1aa1 。")
+        self.assertEqual(rm(t, p), "九jat1ji6saam1 唔sei3 搭aa1 八aa1 。")
 
         t = "九唔搭八。"
         p = "jat1 gau2 ji6 saam1 sei3"
@@ -330,7 +330,7 @@ class TestCommon(BaseTestCase):
 
         t = "九唔搭八。"
         p = "jat1 daap1 baat3 saam1 sei3 gau2"
-        r = "九jat1 唔 搭daap1 八baat3saam1sei3gau2 。"
+        r = "九 唔jat1 搭daap1 八baat3saam1sei3gau2 。"
         self.assertEqual(rm(t, p), r)
 
         t = "我部XYZ死咗。"
@@ -376,7 +376,7 @@ class TestCommon(BaseTestCase):
 
         t = "傻仔 #懵盛盛#condom#哈#condom#哈#哈 做#condom。"
         p = "so4 zai2 mung2 sing6 sing6 kon1 dam4 haa1 kon1 dam4 haa1 haa1 zou6 kon1 dam4"
-        r = "傻so4 仔zai2   #懵盛盛mung2 #condomsing6sing6kon1dam4 #哈haa1 #condomkon1dam4 #哈haa1 #哈haa1   做zou6 #condomkon1dam4 。"
+        r = "傻so4 仔zai2   #懵盛盛mung2sing6sing6kon1 #condomdam4 #哈haa1 #condomkon1dam4 #哈haa1 #哈haa1   做zou6 #condomkon1dam4 。"
         self.assertEqual(rm(t, p), r)
 
         t = "#。"
