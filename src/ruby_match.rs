@@ -50,7 +50,7 @@ fn ruby_text_ignore() -> &'static HashSet<char> {
             .collect();
 
         // add punctuation
-        let punctuation = "、。，；．：？！…‥﹐﹔﹕﹖﹗—「」〈〉︿﹀《》【】『』（）";
+        let punctuation = "、。，；．：？！…‥﹐﹔﹕﹖﹗—「」〈〉︿﹀《》【】『』（）‧";
         punctuation.chars().chain(ascii_ignore).collect()
     })
 }
