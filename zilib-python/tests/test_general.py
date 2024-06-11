@@ -76,6 +76,15 @@ class LocalTests(unittest.TestCase):
         p = "joek3 hon6 wai1 haak1 lei5 fu1"
         self.assertEqual(rm(t, p), "約joek3 翰hon6 ‧ 威wai1 克haak1 里lei5 夫fu1")
 
+        t = "揸BB車"
+        p = "zaa1 bi4 bi1 ce1"
+        self.assertEqual(rm(t, p), "揸zaa1 BBbi4bi1 車ce1")
+
+        t = "袋咁多coins喺身，唔重㗎咩？"
+        p = "doi6 gam3 do1 kon1 si2 hai2 san1, m4 cung5 gaa3 me1"
+        print(rm(t, p))
+        self.assertEqual(rm(t, p), "袋doi6 咁gam3 多do1 coinskon1si2 喺hai2 身san1 ， 唔m4 重cung5 㗎gaa3 咩me1 ？")
+
     def test_segmentation(self):
         self.assertEqual(zilib.end_user_friendly_segment("你真係咩事屈機呀唔知死未!")[2], ['你', '真係', '咩事', '屈機', '呀', '唔知死', '未', '!'])
         self.assertEqual(zilib.end_user_friendly_segment("你真係咩事屈機呀死未知數!")[2], ['你', '真係', '咩事', '屈機', '呀', '死', '未知數', '!'])

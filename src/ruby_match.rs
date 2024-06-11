@@ -238,7 +238,7 @@ impl RubyMatch {
                 let the_arg = (t_i - 1, p_j);
                 // println!("ignored: {} {}", te0, pe);
                 (the_arg, self._lcs(the_arg)) // returned to max_arg, max_v
-            } else if data::cantonese_charlist_with_jyutping().get(&te0).map_or(false, |ps| ps.contains_key(&pe)) {
+            } else if common::is_cjk_cp(te0 as u32) && data::cantonese_charlist_with_jyutping().get(&te0).map_or(false, |ps| ps.contains_key(&pe)) {
                 // Case: match! (somewhat greedily since we could also have matched in the half
                 // part...) We consume both the token and the pronunciation, and add a FULL_MATCH_SCORE
                 // println!("matched: {} {} {} {}", te0, pe, t_i, p_j);
@@ -277,7 +277,7 @@ impl RubyMatch {
                 // }
 
                 // Case 4: we try to match the half part of the pronunciation
-                if cantonese_charlist_half().get(&te0).map_or(false, |ps| ps.contains(&pe.trim_end_matches(&['1', '2', '3', '4', '5', '6']).to_string())) {
+                if common::is_cjk_cp(te0 as u32) && cantonese_charlist_half().get(&te0).map_or(false, |ps| ps.contains(&pe.trim_end_matches(&['1', '2', '3', '4', '5', '6']).to_string())) {
                     let targ = (t_i - 1, p_j - 1);
                     let tv = self._lcs(targ) + HALF_MATCH_SCORE;
                     if tv > v {
