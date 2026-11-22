@@ -1,6 +1,6 @@
 [package]
 name = "zilib-python"
-version = "0.1.12"
+version = "0.1.13"
 edition = "2021"
 
 [dependencies]
@@ -13,4 +13,4 @@ crate-type = ["cdylib"]
 
 [dependencies.pyo3]
 version = "0.20.2"
-features = ["extension-module"]
+features = ["extension-module", "abi3-py39"]
